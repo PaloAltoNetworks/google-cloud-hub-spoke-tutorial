@@ -25,7 +25,8 @@ The VM-Series inspects traffic as follows:
 ## Requirements
 The following is required for this tutorial:
 1. A Google Cloud project. 
-2. A machine with Terraform version:`">= 0.15.3, < 2.0"` or access to Google Cloud Shell. 
+2. A machine with Terraform version:`">= 0.15.3, < 2.0"` 
+    > You can also run this tutorial directly from Google Cloud Shell. 
 
 ## Prepare for deployment
 
@@ -38,7 +39,7 @@ The following is required for this tutorial:
     cd google-cloud-hub-spoke-tutorial
     ```
 
-2. Create a `terraform.tfvars` file from the `terraform.tfvars.example` file.
+2. Create a `terraform.tfvars`.
 
     ```
     cp terraform.tfvars.example terraform.tfvars
@@ -46,14 +47,11 @@ The following is required for this tutorial:
 
 
 3. Edit the `terraform.tfvars` file and set values for the following variables:
-    1. Set  `project_id`  to your deployment Cloud project. 
-    2. Set  `public_key_path` to match the full path of the public key you created.  
-    3. Set `mgmt_allow_ips` to a list of IPv4 addresses that you want to be able to access the VM-Series management interface. 
-
-         
-
-    4. (Optional) Set `create_spoke_networks` to `false` if you do not want to deploy the spoke networks.
-    5. (Optional) The  `vmseries_image_name` defines the VM-Series machine image to deploy.   The image contains the PAN-OS version and license type. 
+    * Set  `project_id`  to your deployment Cloud project. 
+    * Set  `public_key_path` to match the full path of the public key you created.  
+    * Set `mgmt_allow_ips` to a list of IPv4 addresses that you want to be able to access the VM-Series management interface. 
+    * (Optional) Set `create_spoke_networks` to `false` if you do not want to deploy the spoke networks.
+    * (Optional) The  `vmseries_image_name` defines the VM-Series machine image to deploy.   The image contains the PAN-OS version and license type. 
 
         A complete list of supported images can be found by running the following command.
 
@@ -181,7 +179,7 @@ Internet traffic is distributed by an external TCP/UDP load balancer to the VM-S
 
 ### Safely enabling applications with App-ID™ 
 
-Palo Alto Networks [App-ID](https://www.paloaltonetworks.com/technologies/app-id)™ enables you to see applications on your network and learn their behavioral characteristics with their relative risk.  You can use [App-ID](https://www.paloaltonetworks.com/technologies/app-id)™ to enable Jenkins traffic through the VM-Series security policies.
+Palo Alto Networks App-ID™ enables you to see applications on your network and learn their behavioral characteristics with their relative risk.  You can use App-ID™ to enable Jenkins traffic through the VM-Series security policies.
 
 
 
@@ -196,7 +194,7 @@ Palo Alto Networks [App-ID](https://www.paloaltonetworks.com/technologies/app-id
 2. Click **ADD** and search for `jenkins`.  Click **OK**.
 
 
-    <img src="images/ss04.png" width="250">
+    <img src="images/ss04.png" width="350">
 
 
 
