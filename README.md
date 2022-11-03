@@ -25,8 +25,9 @@ The VM-Series inspects traffic as follows:
 ## Requirements
 The following is required for this tutorial:
 1. A Google Cloud project. 
-2. A machine with Terraform version:`">= 0.15.3, < 2.0"` 
-    > You can also run this tutorial directly from Google Cloud Shell. 
+2. A machine with Terraform version:`">= 0.15.3, < 2.0"`
+
+> You can also run this tutorial directly from Google Cloud Shell. 
 
 ## Prepare for deployment
 
@@ -312,8 +313,8 @@ The managed instance group created by Terraform sets the minimum and the maximum
      1. In the Google Cloud console, go to **Compute Engine → Instance Groups**.
      2. Open the `vmseries` instance group and click **EDIT**. 
      3. Within the **Autoscaling** section set:
-         1. **Minimum number of instances** to `2`.
-         2. **Maximum number of instances** to `3`.
+        *  **Minimum number of instances** to `2`.
+        *  **Maximum number of instances** to `3`.
      4. Click **Save**. 
    * **Update using Terraform**
 
