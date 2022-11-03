@@ -21,18 +21,24 @@ The VM-Series inspects traffic as follows:
 3. Traffic between spoke networks is routed to the Internal TCP/UDP Load Balancer in the hub VPC. The VM-Series inspects and forwards the traffic through the trust interface (NIC2) into the hub network which routes permissible traffic to the destination spoke network.
 
 
+
+## Requirements
+The following is required for this tutorial:
+1. A Google Cloud project. 
+2. A machine with Terraform version:`">= 0.15.3, < 2.0"` or access to Google Cloud Shell. 
+
 ## Prepare for deployment
 
 1. Enable the required APIs, generate an SSH key, and clone the repository. 
 
     ```
     gcloud services enable compute.googleapis.com
-    ssh-keygen -f ~/.ssh/gcp-demo -t rsa -C gcp-demo
-    git clone https://github.com/PaloAltoNetworks/terraform-google-vmseries-modules
-    cd terraform-google-vmseries-modules/examples/autoscale_hub_spoke
+    ssh-keygen -f ~/.ssh/vmseries-tutorial -t rsa
+    git clone https://github.com/PaloAltoNetworks/google-cloud-hub-spoke-tutorial
+    cd google-cloud-hub-spoke-tutorial
     ```
 
-2. Create a `terraform.tfvars`.
+2. Create a `terraform.tfvars` file from the `terraform.tfvars.example` file.
 
     ```
     cp terraform.tfvars.example terraform.tfvars
@@ -71,7 +77,7 @@ The VM-Series inspects traffic as follows:
 
 When no further changes are necessary in the configuration, deploy the resources:
 
-1. In Cloud Shell, initialize and apply the Terraform plan.  
+1. Initialize and apply the Terraform plan.  
 
     ```
     terraform init
@@ -190,7 +196,7 @@ Palo Alto Networks [App-ID](https://www.paloaltonetworks.com/technologies/app-id
 2. Click **ADD** and search for `jenkins`.  Click **OK**.
 
 
-    <img src="images/ss04.png" width="500">
+    <img src="images/ss04.png" width="250">
 
 
 
@@ -222,8 +228,7 @@ Palo Alto Networks [App-ID](https://www.paloaltonetworks.com/technologies/app-id
 
 
 
-    Notice the `jenkins` application was denied before the `jenkins` application was added to the **inbound-web** security policy. </br>
-    All Palo Alto Networks firewalls use multiple identification techniques to determine the exact identity of applications traversing your network, including those that try to evade detection by masquerading as legitimate traffic, by hopping ports or by using encryption.
+    Notice the `jenkins` application was denied before the `jenkins` application was added to the **inbound-web** security policy. This is because all Palo Alto Networks firewalls use multiple identification techniques to determine the exact identity of applications traversing your network, including those that try to evade detection by masquerading as legitimate traffic, by hopping ports or by using encryption.
 
 
 ### Internet outbound & east/west traffic 
@@ -234,7 +239,7 @@ The VM-Series secures outbound internet traffic from the spoke networks and east
 <img src="images/diagram_egress.png">
 
 
-1. In Cloud Shell, establish an SSH session with `VM B` in the `Spoke 2` network.  The external load balancer distributes the request to the VM-Series.  The VM-Series inspects and translates the traffic to `VM B`. 
+1. Establish an SSH session with `VM B` in the `Spoke 2` network.  The external load balancer distributes the request to the VM-Series.  The VM-Series inspects and translates the traffic to `VM B`. 
 
     ```
     ssh paloalto@<EXTERNAL_LB_IP> -i ~/.ssh/vmseries-tutorial
@@ -301,7 +306,7 @@ The Terraform code creates a custom Cloud Monitoring dashboard that displays sev
 
 ### Scaling the VM-Series
 
-The managed instance group created by Terraform sets the minimum and the maximum number of VM-Series replicas to `1`.  In this section, modify the minimum and the maximum number of replicas to manually increase the number of running firewalls.
+The managed instance group created by Terraform sets the minimum and the maximum number of VM-Series replicas to `1`.  Modify the minimum and the maximum number of replicas to manually increase the number of running firewalls.
 
 1. Update the Autoscaling replica count through the Google Console or with Terraform. 
 
@@ -330,7 +335,7 @@ The managed instance group created by Terraform sets the minimum and the maximum
      3. At the prompt, enter `yes` to update the cloud resources.
    
 
-2. Go to **Compute Engine → VM instances**.  A new VM-Series instance should be in its creation state.
+2. Go to **Compute Engine → VM instances**.  A new VM-Series instance should be created.
 
 >The load balancers will not send traffic to the VM-Series until the bootstrap process has finished.  This process can take up to 10 minutes.  Please see [Bootstrap the VM-Series Firewall](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall) for more information.
 
