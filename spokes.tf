@@ -97,7 +97,7 @@ module "peering_spoke1" {
   source                                    = "terraform-google-modules/network/google//modules/network-peering"
   count                                     = (var.create_spoke_networks ? 1 : 0)
   version                                   = "~> 5.2.0"
-  local_network                             = module.vpc_trust[0].network_id
+  local_network                             = module.vpc_trust.network_id
   peer_network                              = module.vpc_spoke1[0].network_id
   export_local_subnet_routes_with_public_ip = false
 }
@@ -107,7 +107,7 @@ module "peering_spoke2" {
   source                                    = "terraform-google-modules/network/google//modules/network-peering"
   count                                     = (var.create_spoke_networks ? 1 : 0)
   version                                   = "~> 5.2.0"
-  local_network                             = module.vpc_trust[0].network_id
+  local_network                             = module.vpc_trust.network_id
   peer_network                              = module.vpc_spoke2[0].network_id
   export_local_subnet_routes_with_public_ip = false
 
