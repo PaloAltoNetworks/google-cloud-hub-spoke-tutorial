@@ -161,6 +161,7 @@ resource "local_file" "bootstrap" {
 module "bootstrap" {
   source          = "PaloAltoNetworks/vmseries-modules/google//modules/bootstrap"
   service_account = module.iam_service_account.email
+  location        = "US"
   files = {
     "bootstrap_files/init-cfg.txt"                               = "config/init-cfg.txt"
     "${local_file.bootstrap.filename}"                           = "config/bootstrap.xml"
