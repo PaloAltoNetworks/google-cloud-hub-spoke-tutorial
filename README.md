@@ -93,7 +93,7 @@ Panorama enables you to seamlessly scale the VM-Series for performance, while ma
     location        = "US"
     files = {
         "bootstrap_files/init-cfg.txt"                               = "config/init-cfg.txt"
-       <b>#"${local_file.bootstrap.filename}"                           = "config/bootstrap.xml"</b>
+      <b># "${local_file.bootstrap.filename}"                           = "config/bootstrap.xml"</b>
         "bootstrap_files/content/panupv2-all-contents-8622-7593"     = "content/panupv2-all-contents-8622-7593"
         "bootstrap_files/content/panup-all-antivirus-4222-4735"      = "content/panup-all-antivirus-4222-4735"
         "bootstrap_files/content/panupv3-all-wildfire-703414-706774" = "content/panupv3-all-wildfire-703414-706774"
