@@ -71,8 +71,58 @@ The following is required for this tutorial:
 5. Save your `terraform.tfvars` file.
 
 
+### (Optional) Bootstrap to Panorama
+In production environments, it is highly recommended to use [Panorama](https://docs.paloaltonetworks.com/panorama/10-2/panorama-admin/manage-firewalls) to manage the VM-Series firewalls deployed within the instance group.  
 
-### Deploy
+Panorama enables you to seamlessly scale the VM-Series for performance, while managing the firewalls as a single entity.  As new firewalls are deployed, the metadata defined within the instance template automatically bootstraps the firewalls to Panorama.  Then, Panorama licenses and pushes the configuration to the firewalls.
+
+
+#### Panorama Bootstrap Prerequisites 
+* An existing Panorama appliance.
+  * If you do not have Panorama deployed, you can deploy Panorama via [Terraform](https://github.com/PaloAltoNetworks/terraform-google-vmseries-modules/tree/main/examples/panorama) or through the [Google Cloud Marketplace](https://www.paloaltonetworks.com/resources/guides/panorama-on-gcp-deployment-guide).
+* A baseline configuration for Panorama to successfully bootstrap the VM-Series firewall.  For assistance with this configuration, please see the [Panorama Staging](docs/panorama_staging.md) community guide. 
+
+#### Modify Terraform to Bootstrap to Panorama
+
+1. In `main.tf`, comment/delete the `config/bootstrap.xml` within the `bootstrap` module.  This removes the local firewall configuration from the bootstrap storage bucket.
+
+    <pre>
+    module "bootstrap" {
+    source          = "PaloAltoNetworks/vmseries-modules/google//modules/bootstrap"
+    service_account = module.iam_service_account.email
+    location        = "US"
+    files = {
+        "bootstrap_files/init-cfg.txt"                               = "config/init-cfg.txt"
+        <b>"${local_file.bootstrap.filename}"                           = "config/bootstrap.xml"</b>
+        "bootstrap_files/content/panupv2-all-contents-8622-7593"     = "content/panupv2-all-contents-8622-7593"
+        "bootstrap_files/content/panup-all-antivirus-4222-4735"      = "content/panup-all-antivirus-4222-4735"
+        "bootstrap_files/content/panupv3-all-wildfire-703414-706774" = "content/panupv3-all-wildfire-703414-706774"
+        "bootstrap_files/authcodes"                                  = "license/authcodes"
+    }
+    }
+    </pre>
+   
+2. In `bootstrap_files/init-cfg.txt`, specify values to match your Panorama's address, device group, template stack, and VM authorization key. See the [Panorama Staging](docs/panorama_staging.md) community guide for more information. 
+
+    <pre>
+    type=dhcp-client
+    ip-address=
+    default-gateway=
+    netmask=
+    ipv6-address=
+    ipv6-default-gateway=
+    dhcp-accept-server-hostname=yes
+    dns-primary=169.254.169.254
+    dns-secondary=8.8.8.8
+    op-command-modes=mgmt-interface-swap
+    panorama-server=<b>5.5.5.5</b>
+    vm-auth-key=<b>1234123412341234</b>
+    dgname=<b>my-panorama-device-group</b>
+    tplname=<b>my-panorama-template-stack</b>
+    </pre>
+3. Proceed to the [Deployment](#deploy) step.
+
+## Deployment
 
 When no further changes are necessary in the configuration, deploy the resources:
 
@@ -341,7 +391,7 @@ The managed instance group created by Terraform sets the minimum and the maximum
 
 3. Once the VM-Series finishes its deployment, follow the [Accessing the VM-Series firewall](#Accessing-the-VM-Series-firewall) instructions to gain access to the firewall’s web interface.  This step is not required if you are bootstrapping the VM-Series to Panorama.  This is because Panorama pushes the entire configuration to the scaled firewalls.
 
->The metadata within the instance template associated with the instance group defines how the VM-Series receives its local configuration. <br><br> It is highly recommended to set the metadata values to automatically bootstrap the VM-Series to a Panorama appliance.  Panorama enables you to seamlessly scale the VM-Series for performance while managing the firewalls as a single entity.  Please see [Panorama Management](https://docs.paloaltonetworks.com/panorama/10-2/panorama-admin/manage-firewalls) for more information.
+>The metadata within the instance template associated with the instance group defines how the VM-Series receives its local configuration.
 
 4. On the scaled VM-Series, navigate to **Monitor → Traffic**.  The traffic logs should be populated demonstrating the scaled VM-Series is now processing traffic. 
 
