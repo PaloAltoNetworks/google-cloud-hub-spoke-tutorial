@@ -187,13 +187,13 @@ module "iam_service_account" {
 module "vmseries" {
   source                 = "github.com/PaloAltoNetworks/terraform-google-vmseries-modules//modules/autoscale?ref=autoscale_regional_migs-update"
   name                   = "${local.prefix}vmseries"
-  use_regional_mig       = true
+  regional_mig           = true
   region                 = var.region
   min_vmseries_replicas  = var.vmseries_replica_minimum // min firewalls per zone.
   max_vmseries_replicas  = var.vmseries_replica_maximum // max firewalls per zone.
   image                  = local.vmseries_image_url
   create_pubsub_topic    = true
-  target_pool_self_links = [module.lb_external.target_pool]
+  target_pools           = [module.lb_external.target_pool]
   service_account_email  = module.iam_service_account.email
   autoscaler_metrics     = var.autoscaler_metrics
   tags                   = ["vmseries-tutorial"]
