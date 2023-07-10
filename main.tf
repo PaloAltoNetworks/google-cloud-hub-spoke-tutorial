@@ -179,14 +179,14 @@ module "bootstrap" {
 # -------------------------------------------------------------------------------------
 
 module "iam_service_account" {
-  source             = "github.com/PaloAltoNetworks/terraform-google-vmseries-modules//modules/iam_service_account?ref=autoscale_regional_migs-update"
+  source             = "github.com/PaloAltoNetworks/terraform-google-vmseries-modules//modules/iam_service_account?ref=main"
   service_account_id = "${local.prefix}vmseries-mig-sa"
   project_id         = var.project_id
 }
 
 
 module "vmseries" {
-  source                 = "github.com/PaloAltoNetworks/terraform-google-vmseries-modules//modules/autoscale?ref=autoscale_regional_migs-update"
+  source                 = "github.com/PaloAltoNetworks/terraform-google-vmseries-modules//modules/autoscale?ref=main"
   name                   = "${local.prefix}vmseries"
   regional_mig           = true
   region                 = var.region
