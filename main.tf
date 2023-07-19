@@ -193,7 +193,7 @@ module "vmseries" {
   min_vmseries_replicas  = var.vmseries_replica_minimum // min firewalls per zone.
   max_vmseries_replicas  = var.vmseries_replica_maximum // max firewalls per zone.
   image                  = local.vmseries_image_url
-  create_pubsub_topic    = true
+  create_pubsub_topic    = false
   target_pools           = [module.lb_external.target_pool]
   service_account_email  = module.iam_service_account.email
   autoscaler_metrics     = var.autoscaler_metrics
@@ -242,6 +242,7 @@ module "vmseries" {
 module "lb_internal" {
   source              = "PaloAltoNetworks/vmseries-modules/google//modules/lb_internal"
   name                = "${local.prefix}vmseries-internal-lb"
+  region              = var.region
   network             = module.vpc_trust.network_id
   subnetwork          = module.vpc_trust.subnets_self_links[0]
   health_check_port   = "80"
