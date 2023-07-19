@@ -2,10 +2,10 @@
 project_id                  = null
 public_key_path             = "~/.ssh/vmseries-tutorial.pub"
 mgmt_allow_ips              = ["0.0.0.0/0"]
+region                      = "us-central1"
 vmseries_image_name         = "vmseries-flex-bundle2-1022h2"
 
 # Optional for VM-Series tutorial.
-region                      = "us-central1"
 cidr_mgmt                   = "10.0.0.0/28"
 cidr_untrust                = "10.0.1.0/28"
 cidr_trust                  = "10.0.2.0/28"
