@@ -186,7 +186,7 @@ module "iam_service_account" {
 
 
 module "vmseries" {
-  source                 = "github.com/PaloAltoNetworks/terraform-google-vmseries-modules//modules/autoscale?ref=222-fix-delic-func-null"
+  source                 =  "github.com/PaloAltoNetworks/terraform-google-vmseries-modules//modules/autoscale"
   name                   = "${local.prefix}vmseries"
   regional_mig           = true
   region                 = var.region
