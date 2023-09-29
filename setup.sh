@@ -62,7 +62,7 @@ set_public_key() {
     fi
 
     echo "Setting public key as: " $public_key_path
-    sed -i '.bak' "s|__ssh_key_name__|$public_key_path|g" $VARS_FILENAME
+    sed -i "s|__ssh_key_name__|$public_key_path|g" $VARS_FILENAME
 
 }
 
@@ -92,7 +92,7 @@ set_project_id() {
     fi
     
     echo "Setting project_id as: " $project_id
-    sed -i '.bak' "s|__project_id__|$project_id|g" $VARS_FILENAME
+    sed -i "s|__project_id__|$project_id|g" $VARS_FILENAME
 
 }
 
@@ -112,7 +112,7 @@ set_region() {
     region=${regions[$((choice-1))]}
 
     echo "Setting region as: " $region
-    sed -i '.bak' "s|__region__|$region|g" $VARS_FILENAME
+    sed -i "s|__region__|$region|g" $VARS_FILENAME
 }
 
 cd $(dirname $0)
@@ -123,8 +123,6 @@ cp terraform.tfvars.example terraform.tfvars
 set_public_key "terraform.tfvars"
 set_project_id "terraform.tfvars"
 set_region "terraform.tfvars"
-
-rm terraform.tfvars.bak
 
 # Initialize and apply the Terraform plan without prompting for confirmation
 echo ""
