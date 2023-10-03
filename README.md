@@ -64,7 +64,7 @@ The script, `rapid/setup.sh`, prepares the environment variables and applies the
     > [!IMPORTANT]
     > The compute resources may take an additional 10 minutes to complete their boot process.
 
-4. Proceed to [Access the VM-Series firewall](accessing-the-vm-series-firewall).
+4. Proceed to [Access the VM-Series firewall](access-the-vm-series-firewall).
 
     > [!NOTE]
     > You can redisplay the outputs at any time by executing `terraform output` inside the build directory.
@@ -170,7 +170,7 @@ Panorama enables you to seamlessly scale the VM-Series for performance, while ma
     tplname=<b>my-panorama-template-stack</b>
     </pre>
 
-3. Proceed to the [Deployment](#deploy) step.
+3. Proceed to [Deploy](#deploy).
 
 ### Deploy
 

@@ -93,6 +93,7 @@ set_project_id() {
     
     echo "Setting project_id as: " $project_id
     sed -i "s|__project_id__|$project_id|g" $VARS_FILENAME
+    export CLOUDSDK_CORE_PROJECT=$project_id
 
 }
 
