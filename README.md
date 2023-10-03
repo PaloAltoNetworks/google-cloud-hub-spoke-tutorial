@@ -25,7 +25,7 @@ The following is required for this tutorial:
 
 1. A Google Cloud project. 
 2. A machine with Terraform version:`">= 0.15.3, < 2.0"`
-3. Choose either the [Rapid](option-1.-rapid-deployment) or [Standard](option-2.-standard-deployment) deployment option.
+3. Choose either the [Rapid](option-1-rapid-deployment) or [Standard](option-2-standard-deployment) deployment option.
 
 > [!NOTE]
 > This tutorial assumes you are using Google Cloud Shell. 
