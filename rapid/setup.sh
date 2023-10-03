@@ -118,16 +118,15 @@ set_region() {
 cd $(dirname $0)
 
 # Create a .tfvars from rapid.tfvars.example
-cp rapid.tfvars.example rapid.tfvars
+cp rapid/rapid.tfvars.example terraform.tfvars
 
 # Set the variables inside .tfvars
-set_public_key "rapid.tfvars"
-set_project_id "rapid.tfvars"
-set_region "rapid.tfvars"
+set_public_key "terraform.tfvars"
+set_project_id "terraform.tfvars"
+set_region "terraform.tfvars"
 
 
 # Initialize and apply the Terraform plan without prompting for confirmation
-cd ..
 echo ""
 echo "Initializing directory for lab resource deployment"
 terraform init
@@ -135,7 +134,7 @@ terraform init
 # Deploy resources
 echo ""
 echo "Deploying Lab Resources required for Hub-Spoke design with Palo Alto Networks VM-Series NGFW on GCP"
-terraform apply -auto-approve -var-file rapid/rapid.tfvars
+terraform apply -auto-approve
 
 if [ $? -eq 0 ]; then
     echo "\nHub-Spoke design with Palo Alto Networks VM-Series NGFW Lab Deployment Completed successfully!"

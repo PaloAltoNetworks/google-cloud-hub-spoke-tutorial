@@ -46,8 +46,8 @@ This tutorial has two deployment options. Both options deploy identical environm
 
 The script, `rapid/setup.sh`, prepares the environment variables and applies the Terraform plan for you.
 
-> [!IMPORTANT]
-> This option only supports VM-Series PAYGO Bundle2 (PAN-OS 10.2.2-h2) and does not support bootstrapping to Panorama.
+    > [!IMPORTANT]
+    > This option only supports VM-Series PAYGO Bundle2 (PAN-OS 10.2.2-h2) and does not support bootstrapping to Panorama.
 
 1. Open [Google Cloud Shell](shell.cloud.google.com) <img src="https://storage.googleapis.com/cloud-training/images/devshell.png" alt="cloudshell.png" />.
 
