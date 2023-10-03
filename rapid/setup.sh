@@ -137,8 +137,9 @@ echo "Deploying Lab Resources required for Hub-Spoke design with Palo Alto Netwo
 terraform apply -auto-approve
 
 if [ $? -eq 0 ]; then
-    echo "\nHub-Spoke design with Palo Alto Networks VM-Series NGFW Lab Deployment Completed successfully!"
+    echo "Hub-Spoke design with Palo Alto Networks VM-Series NGFW Lab Deployment Completed successfully!"
 else
-    echo "\nHub-Spoke design with Palo Alto Networks VM-Series NGFW Lab Deployment Failed!"
+    echo "Hub-Spoke design with Palo Alto Networks VM-Series NGFW Lab Deployment Failed! To re-run:"
+    echo "terraform apply"
     exit 1
 fi

@@ -12,11 +12,12 @@ Below is a diagram of the tutorial.  VM-Series firewalls are deployed with a reg
 <img src="images/diagram.png">
 
 
-The VM-Series inspects traffic as follows:
+| Traffic Pattern        | Description                                                                                                                                                                                                                                                                                                       |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Internet inbound       | Traffic from the internet to applications in the spoke networks are distributed by the External TCP/UDP Load Balancer to the VM-Series untrust interfaces (NIC0). The VM-Series inspects the traffic and forwards permissible traffic through its trust interface (NIC2) to the application in the spoke network. |
+| Internet outbound      | Traffic from the spoke networks destined to the internet is routed to the Internal TCP/UDP Load Balancer in the hub VPC. The VM-Series inspects the traffic and forwards permissible traffic through its untrust interface (NIC0) to the internet.                                                                | 
+| VPC-to-VPC (east-west) | Traffic between spoke networks is routed to the Internal TCP/UDP Load Balancer in the hub VPC. The VM-Series inspects and forwards the traffic through the trust interface (NIC2) into the hub network which routes permissible traffic to the destination spoke network.                                         | 
 
-1. Traffic from the internet to applications in the spoke networks are distributed by the External TCP/UDP Load Balancer to the VM-Series untrust interfaces (NIC0). The VM-Series inspects the traffic and forwards permissible traffic through its trust interface (NIC2) to the application in the spoke network.
-2. Traffic from the spoke networks destined to the internet is routed to the Internal TCP/UDP Load Balancer in the hub VPC. The VM-Series inspects the traffic and forwards permissible traffic through its untrust interface (NIC0) to the internet.
-3. Traffic between spoke networks is routed to the Internal TCP/UDP Load Balancer in the hub VPC. The VM-Series inspects and forwards the traffic through the trust interface (NIC2) into the hub network which routes permissible traffic to the destination spoke network.
 
 
 ## Requirements
@@ -58,7 +59,7 @@ The script, `rapid/setup.sh`, prepares the environment variables and applies the
     ./google-cloud-hub-spoke-tutorial/rapid/setup.sh
     ```
 
-3. Provide the appropriate responses for the scripted prompts. 
+3. Provide the appropriate responses for each scripted prompt. 
 
 4. After all the resources are created, the script displays the following message:
 
@@ -118,12 +119,12 @@ In this deployment option, retrieve the required Terraform files and modify them
     >   --format='table(name,PROJECT,status)'
     > ```
 
-4. (Optional) If you are using BYOL image (i.e. `vmseries-flex-byol-*`), the license can be applied during deployment or after deployment.  To bootstrap the license during deployment:
-   - [Contact](https://www.paloaltonetworks.com/company/contact-sales) your Palo Alto Networks sales representative to receive the licenses.
-   - [Create a Support Account](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/license-the-vm-series-firewall/create-a-support-account#id4032767e-a4a8-4f5a-9df2-48f5d63780ba) and [create a deployment profile](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/license-the-vm-series-firewall/software-ngfw/create-a-deployment-profile-vm-series).
-   - Add the **VM-Series Auth-Code** to `bootstrap_files/authcodes`. 
-
-5. Save your `terraform.tfvars` file.
+4. (Optional) If you are using BYOL image (i.e. `vmseries-flex-byol-*`), the license can be applied during or after deployment.  
+   1. To license during deployment:
+      - [Contact](https://www.paloaltonetworks.com/company/contact-sales) your Palo Alto Networks sales representative to receive the licenses.
+      - [Create a Support Account](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/license-the-vm-series-firewall/create-a-support-account#id4032767e-a4a8-4f5a-9df2-48f5d63780ba) and [create a deployment profile](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/license-the-vm-series-firewall/software-ngfw/create-a-deployment-profile-vm-series).
+      - Add the **VM-Series Auth-Code** to `bootstrap_files/authcodes`. 
+   2. Save your `terraform.tfvars` file.
 
 
 ### (Optional) Bootstrap to Panorama
@@ -434,10 +435,10 @@ You can modify the minimum and the maximum number of replicas to manually increa
     > The load balancers will not send traffic to the VM-Series until the bootstrap process has finished.  This process can take up to 10 minutes.  Please see [Bootstrap the VM-Series Firewall](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall) for more information.
 
 
-3. Once the VM-Series finishes its deployment, follow the [Access the VM-Series firewall](#access-the-vm-series-firewall) instructions to gain access to the firewall’s web interface.  This step is not required if you are bootstrapping the VM-Series to Panorama.  This is because Panorama pushes the entire configuration to the scaled firewalls.
+3. Once the VM-Series deploys, follow the [Access the VM-Series firewall](#access-the-vm-series-firewall) instructions to gain access to the firewall’s web interface.  
     
     > [!NOTE]
-    > The metadata within the instance template associated with the instance group defines how the VM-Series receives its local configuration.
+    > This step is not required if you are bootstrapping the VM-Series to Panorama.  This is because Panorama pushes the entire configuration to the scaled firewalls.
 
 4. On the scaled VM-Series, navigate to **Monitor → Traffic**.  The traffic logs should be populated demonstrating the scaled VM-Series is now processing traffic. 
 
@@ -447,6 +448,7 @@ You can modify the minimum and the maximum number of replicas to manually increa
 To avoid incurring charges to your Google Cloud account for the resources you created in this tutorial, delete all the resources when you no longer need them.
 
 1. Run the following command
+    
     ```
     terraform destroy
     ```
