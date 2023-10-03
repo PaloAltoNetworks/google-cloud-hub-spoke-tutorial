@@ -32,7 +32,7 @@ The following is required for this tutorial:
 
 ### Select a deployment option
 
-There are two deployment options for this tutorial.  Both deploy identical environments by using the same Terraform plan. 
+This tutorial has two deployment options. Both options deploy identical environments. 
 
 | Option       | Description                                                                                                                                           | 
 | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -44,10 +44,10 @@ There are two deployment options for this tutorial.  Both deploy identical envir
 
 ## Option 1. Rapid deployment
 
-In this deployment option, a script (`rapid/setup.sh`) prepares the necessary environment variables and applies the Terraform plan for you.
+The script, `rapid/setup.sh`, prepares the environment variables and applies the Terraform plan for you.
 
 > [!IMPORTANT]
-> This option only supports VM-Series PAYGO Bundle2 (PAN-OS 10.2.2-h2) and does not support Panorama bootstrapping.
+> This option only supports VM-Series PAYGO Bundle2 (PAN-OS 10.2.2-h2) and does not support bootstrapping to Panorama.
 
 1. Open [Google Cloud Shell](shell.cloud.google.com) <img src="https://storage.googleapis.com/cloud-training/images/devshell.png" alt="cloudshell.png" />.
 
@@ -55,7 +55,7 @@ In this deployment option, a script (`rapid/setup.sh`) prepares the necessary en
 
     ```
     git clone https://github.com/PaloAltoNetworks/google-cloud-hub-spoke-tutorial
-    ./google-cloud-hub-spoke-tutorial/setup.sh
+    ./google-cloud-hub-spoke-tutorial/rapid/setup.sh
     ```
 
 3. Provide the appropriate responses for the scripted prompts. 
@@ -70,7 +70,7 @@ In this deployment option, a script (`rapid/setup.sh`) prepares the necessary en
     EXTERNAL_LB_IP = "35.68.75.133"
     ```
 
-    The `EXTERNAL_LB_IP` output displays the IP address of the external load balancer’s forwarding rule.  The compute resources may take an additional 10 minutes to complete their bootup process.
+    > The `EXTERNAL_LB_IP` output displays the IP address of the external load balancer’s forwarding rule.  The compute resources may take an additional 10 minutes to complete their bootup process.
 
     > [!NOTE]
     > You can redisplay the outputs at any time by executing `terraform output` inside the build directory.
@@ -112,10 +112,13 @@ In this deployment option, retrieve the required Terraform files and modify them
     | `vmseries_image_name`   | Set to the VM-Series image you want to deploy.                                       | `vmseries-flex-bundle2-1022h2` |
 
     > [!NOTE]
-    > For `vmseries_image_name`, a full list of supported images can be found by executing the following command.
-        ```
-        gcloud compute images list --project paloaltonetworksgcp-public --filter='name ~ .*vmseries-flex.*' --format='table(name,PROJECT,status)'
-        ```
+    > For `vmseries_image_name`, a full list of public images can be found with this command:
+    > ```
+    > gcloud compute images list \
+    >   --project paloaltonetworksgcp-public \
+    >   --filter='name ~ .*vmseries-flex.*' \
+    >   --format='table(name,PROJECT,status)'
+    > ```
 
 4. (Optional) If you are using BYOL image (i.e. `vmseries-flex-byol-*`), the license can be applied during deployment or after deployment.  To bootstrap the license during deployment:
    - [Contact](https://www.paloaltonetworks.com/company/contact-sales) your Palo Alto Networks sales representative to receive the licenses.
@@ -217,15 +220,14 @@ To access the VM-Series user interface, a password must be set for the `admin` u
 
 
 2. SSH to the VM-Series using the `EXTERNAL_IP` with your private SSH key. 
-   
-   > [!IMPORTANT]
-   > If your login attempt is refused, please wait for the cloud resources to finish booting.
 
     ```
     ssh admin@<EXTERNAL_IP> -i ~/.ssh/vmseries-tutorial
     ```
 
- 
+    > [!IMPORTANT]
+    > If your login attempt is refused, please wait for the cloud resources to finish booting.
+
 3. On the VM-Series, set a password for the `admin` username. 
 
     ```
@@ -279,9 +281,7 @@ Internet traffic is distributed by an external TCP/UDP load balancer to the VM-S
 
     <img src="images/ss02.png" width="500">
 
-
-
-    The request to the Jenkins server fails because the Jenkins application has not been enabled in the VM-Series security policies.  Palo Alto Networks firewalls leverage [App-ID](https://www.paloaltonetworks.com/technologies/app-id)™ to identify and enable applications with layer-7 controls. 
+    > The request to the Jenkins server fails because the Jenkins application has not been enabled in the VM-Series security policies.  Palo Alto Networks firewalls leverage [App-ID](https://www.paloaltonetworks.com/technologies/app-id)™ to identify and enable applications with layer-7 controls. 
 
 
 ### Safely enabling applications with App-ID™ 
@@ -296,14 +296,10 @@ Palo Alto Networks App-ID™ enables you to see applications on your network and
     <img src="images/ss03.png" width="1500">
 
 
-
-
 2. Click **ADD** and search for `jenkins`.  Click **OK**.
 
 
     <img src="images/ss04.png" width="350">
-
-
 
 
 3. Click **Commit → Commit** to apply the changes to the VM-Series configuration.
@@ -312,14 +308,10 @@ Palo Alto Networks App-ID™ enables you to see applications on your network and
     <img src="images/ss05.png" width="1500">
 
 
-
-
 4. Access the Jenkins service again.  The Jenkins page resolves because you enabled the `jenkins` application on the VM-Series security policy.  
 
 
     <img src="images/ss06.png" width="500">
-
-
 
 
 5. On the VM-Series, go to **Monitor → Traffic** to view the traffic logs.  Enter the query below to filter for `jenkins` traffic. 
@@ -328,12 +320,11 @@ Palo Alto Networks App-ID™ enables you to see applications on your network and
     ( app eq jenkins )
     ```
 
-
     <img src="images/ss07.png" width="1500">
 
 
 
-    Notice the `jenkins` application was denied before the `jenkins` application was added to the **inbound-web** security policy. This is because all Palo Alto Networks firewalls use multiple identification techniques to determine the exact identity of applications traversing your network, including those that try to evade detection by masquerading as legitimate traffic, by hopping ports or by using encryption.
+    > The `jenkins` application was denied before the `jenkins` application was added to the **inbound-web** security policy. This is because all Palo Alto Networks firewalls use multiple identification techniques to determine the exact identity of applications traversing your network, including those that try to evade detection by masquerading as legitimate traffic, by hopping ports or by using encryption.
 
 
 ### Internet outbound & east/west traffic 
@@ -390,8 +381,6 @@ This tutorial uses a regional managed instance group to deploy and scale VM-Seri
 
 The VM-Series firewall can publish native PAN-OS metrics to Google Cloud Monitoring.   Each metric can be set as an autoscaling parameter within the managed instance group.  Custom PAN-OS metrics include: 
 
-
-
 * Dataplane CPU utilization
 * Dataplane packet buffer utilization
 * New connections per second
@@ -403,15 +392,16 @@ The VM-Series firewall can publish native PAN-OS metrics to Google Cloud Monitor
 
 See [custom PAN-OS metrics published for monitoring](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/about-the-vm-series-firewall/custom-pan-os-metrics-published-for-monitoring) for more information. 
 
-The Terraform code creates a custom Cloud Monitoring dashboard that displays several of the VM-Series metrics.  To view the dashboard, perform the following: 
-
+The Terraform plan creates a custom Cloud Monitoring dashboard that displays several of the VM-Series metrics.  To view the dashboard, perform the following: 
 
 1. In the Google Cloud console, select **Monitoring → Dashboards**.  
 2. Select the dashboard named **VM-Series Metrics**.
 
 ### Scaling the VM-Series
 
-The managed instance group created by Terraform sets the minimum and the maximum number of VM-Series replicas to `1`.  Modify the minimum and the maximum number of replicas to manually increase the number of running firewalls.
+The managed instance group created by Terraform sets the minimum and the maximum number of VM-Series replicas to `1`.  
+
+You can modify the minimum and the maximum number of replicas to manually increase the number of running firewalls.
 
 1. Update the Autoscaling replica count through the Google Console or with Terraform. 
 
