@@ -29,6 +29,15 @@ The following is required for this tutorial:
 
 > You can also run this tutorial directly from Google Cloud Shell. 
 
+## Quick Deployment for Proof-of-Concept
+
+If you would like to deploy this design for a quick hands-on as a proof-of-concept, you can use the setup script included as shown below.
+
+    git clone https://github.com/PaloAltoNetworks/google-cloud-hub-spoke-tutorial
+    ./google-cloud-hub-spoke-tutorial/setup.sh
+
+This script will run through the steps required to update the variables that will be used for the deployment. If you need a more customized deployment, ignore this section and jump to the [Prepare for deployment](#prepare-for-deployment) section.
+
 ## Prepare for deployment
 
 1. Enable the required APIs, generate an SSH key, and clone the repository. 
