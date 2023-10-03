@@ -1,8 +1,8 @@
 # Required for VM-Series tutorial
-project_id                  = null
-public_key_path             = "~/.ssh/vmseries-tutorial.pub"
+project_id                  = "__project_id__"
+public_key_path             = "__ssh_key_name__"
 mgmt_allow_ips              = ["0.0.0.0/0"]
-region                      = "us-central1"
+region                      = "__region__"
 vmseries_image_name         = "vmseries-flex-bundle2-1022h2"
 
 # Optional for VM-Series tutorial.
