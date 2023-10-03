@@ -14,31 +14,77 @@ Below is a diagram of the tutorial.  VM-Series firewalls are deployed with a reg
 
 The VM-Series inspects traffic as follows:
 
-
-
 1. Traffic from the internet to applications in the spoke networks are distributed by the External TCP/UDP Load Balancer to the VM-Series untrust interfaces (NIC0). The VM-Series inspects the traffic and forwards permissible traffic through its trust interface (NIC2) to the application in the spoke network.
 2. Traffic from the spoke networks destined to the internet is routed to the Internal TCP/UDP Load Balancer in the hub VPC. The VM-Series inspects the traffic and forwards permissible traffic through its untrust interface (NIC0) to the internet.
 3. Traffic between spoke networks is routed to the Internal TCP/UDP Load Balancer in the hub VPC. The VM-Series inspects and forwards the traffic through the trust interface (NIC2) into the hub network which routes permissible traffic to the destination spoke network.
 
 
-
 ## Requirements
+
 The following is required for this tutorial:
+
 1. A Google Cloud project. 
 2. A machine with Terraform version:`">= 0.15.3, < 2.0"`
 
-> You can also run this tutorial directly from Google Cloud Shell. 
+    > [!NOTE]
+    > This tutorial assumes you are using Google Cloud Shell. 
 
-## Quick Deployment for Proof-of-Concept
 
-If you would like to deploy this design for a quick hands-on as a proof-of-concept, you can use the setup script included as shown below.
+### Select a deployment option
 
+There are two deployment options for this tutorial.  Both deploy identical environments by using the same Terraform plan. 
+
+| Option       | Description                                                                                                                                           | 
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rapid**    | A startup script (`rapid/startup.sh`) quickly builds the environment.  This option is best for those who want to quickly test concepts and use-cases. |
+| **Standard** | Best for those who want to modify and apply the Terraform plan to best suit their environment use-cases.                                              |
+
+
+
+
+## Option 1. Rapid deployment
+
+In this deployment option, a script (`rapid/setup.sh`) prepares the necessary environment variables and applies the Terraform plan for you.
+
+> [!IMPORTANT]
+> This option only supports VM-Series PAYGO Bundle2 (PAN-OS 10.2.2-h2) and does not support Panorama bootstrapping.
+
+1. Open [Google Cloud Shell](shell.cloud.google.com) <img src="https://storage.googleapis.com/cloud-training/images/devshell.png" alt="cloudshell.png" />.
+
+2. When you are ready to deploy, clone the repository and execute the script to build the cloud resources.
+
+    ```
     git clone https://github.com/PaloAltoNetworks/google-cloud-hub-spoke-tutorial
     ./google-cloud-hub-spoke-tutorial/setup.sh
+    ```
 
-This script will run through the steps required to update the variables that will be used for the deployment. If you need a more customized deployment, ignore this section and jump to the [Prepare for deployment](#prepare-for-deployment) section.
+3. Provide the appropriate responses for the scripted prompts. 
 
-## Prepare for deployment
+4. After all the resources are created, the script displays the following message:
+
+    ```
+    Apply complete!
+
+    Outputs:
+
+    EXTERNAL_LB_IP = "35.68.75.133"
+    ```
+
+    The `EXTERNAL_LB_IP` output displays the IP address of the external load balancer’s forwarding rule.  The compute resources may take an additional 10 minutes to complete their bootup process.
+
+    > [!NOTE]
+    > You can redisplay the outputs at any time by executing `terraform output` inside the build directory.
+
+4. Proceed to [Access the VM-Series firewall](accessing-the-vm-series-firewall).
+
+
+
+
+## Option 2. Standard deployment
+
+In this deployment option, retrieve the required Terraform files and modify them to deploy the tutorial environment. 
+
+### Prepare for deployment
 
 1. Enable the required APIs, generate an SSH key, and clone the repository. 
 
@@ -55,27 +101,26 @@ This script will run through the steps required to update the variables that wil
     cp terraform.tfvars.example terraform.tfvars
     ```
 
-
 3. Edit the `terraform.tfvars` file and set values for the following variables:
-    * Set  `project_id`  to your deployment Cloud project. 
-    * Set  `public_key_path` to match the full path of the public key you created.  
-    * Set `mgmt_allow_ips` to a list of IPv4 addresses that you want to be able to access the VM-Series management interface. 
-    * (Optional) Set `create_spoke_networks` to `false` if you do not want to deploy the spoke networks.
-    * (Optional) The  `vmseries_image_name` defines the VM-Series machine image to deploy.   The image contains the PAN-OS version and license type. 
 
-        A complete list of supported images can be found by running the following command.
+    | Key                     | Value                                                                                | Default                        |
+    | ----------------------- | ------------------------------------------------------------------------------------ | ------------------------------ |
+    | `project_id`            | The Project ID within Google Cloud.                                                  | `null`                         |
+    | `public_key_path`       | The local path of the public key you previously created                              | `~/.ssh/vmseries-tutorial.pub` |
+    | `mgmt_allow_ips`        | A list of IPv4 addresses that can have access to the VM-Series management interface. | `["0.0.0.0/0"]`                |
+    | `create_spoke_networks` | Set to `false` if you do not want to create the spoke networks.                      | `true`                         |
+    | `vmseries_image_name`   | Set to the VM-Series image you want to deploy.                                       | `vmseries-flex-bundle2-1022h2` |
 
+    > [!NOTE]
+    > For `vmseries_image_name`, a full list of supported images can be found by executing the following command.
         ```
-        gcloud compute images list \
-            --project paloaltonetworksgcp-public \
-            --filter='name ~ .*vmseries-flex.*' \
-            --format='table(name,PROJECT,status)'
+        gcloud compute images list --project paloaltonetworksgcp-public --filter='name ~ .*vmseries-flex.*' --format='table(name,PROJECT,status)'
         ```
 
 4. (Optional) If you are using BYOL image (i.e. `vmseries-flex-byol-*`), the license can be applied during deployment or after deployment.  To bootstrap the license during deployment:
-    1. [Contact](https://www.paloaltonetworks.com/company/contact-sales) your Palo Alto Networks sales representative to receive the licenses.
-    2. [Create a Support Account](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/license-the-vm-series-firewall/create-a-support-account#id4032767e-a4a8-4f5a-9df2-48f5d63780ba) and [create a deployment profile](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/license-the-vm-series-firewall/software-ngfw/create-a-deployment-profile-vm-series). 
-    3. Add the **VM-Series Auth-Code** to `bootstrap_files/authcodes`. 
+   - [Contact](https://www.paloaltonetworks.com/company/contact-sales) your Palo Alto Networks sales representative to receive the licenses.
+   - [Create a Support Account](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/license-the-vm-series-firewall/create-a-support-account#id4032767e-a4a8-4f5a-9df2-48f5d63780ba) and [create a deployment profile](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/license-the-vm-series-firewall/software-ngfw/create-a-deployment-profile-vm-series).
+   - Add the **VM-Series Auth-Code** to `bootstrap_files/authcodes`. 
 
 5. Save your `terraform.tfvars` file.
 
@@ -129,9 +174,10 @@ Panorama enables you to seamlessly scale the VM-Series for performance, while ma
     dgname=<b>my-panorama-device-group</b>
     tplname=<b>my-panorama-template-stack</b>
     </pre>
+
 3. Proceed to the [Deployment](#deploy) step.
 
-## Deployment
+### Deploy
 
 When no further changes are necessary in the configuration, deploy the resources:
 
@@ -154,10 +200,10 @@ When no further changes are necessary in the configuration, deploy the resources
 
     The `EXTERNAL_LB_IP` output displays the IP address of the external load balancer’s forwarding rule.  The compute resources may take an additional 10 minutes to complete their bootup process.
 
+    > [!NOTE]
+    > You can redisplay the outputs at any time by executing `terraform output` inside the build directory.
 
->You can redisplay the outputs at any time by executing `terraform output` inside the build directory.
-
-## Accessing the VM-Series firewall
+## Access the VM-Series firewall
 
 To access the VM-Series user interface, a password must be set for the `admin` user.
 
@@ -172,7 +218,8 @@ To access the VM-Series user interface, a password must be set for the `admin` u
 
 2. SSH to the VM-Series using the `EXTERNAL_IP` with your private SSH key. 
    
-   >If your login attempt is refused, please wait for the cloud resources to finish booting.
+   > [!IMPORTANT]
+   > If your login attempt is refused, please wait for the cloud resources to finish booting.
 
     ```
     ssh admin@<EXTERNAL_IP> -i ~/.ssh/vmseries-tutorial
@@ -395,12 +442,14 @@ The managed instance group created by Terraform sets the minimum and the maximum
 
 2. Go to **Compute Engine → VM instances**.  A new VM-Series instance should be created.
 
->The load balancers will not send traffic to the VM-Series until the bootstrap process has finished.  This process can take up to 10 minutes.  Please see [Bootstrap the VM-Series Firewall](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall) for more information.
+    > [!NOTE]
+    > The load balancers will not send traffic to the VM-Series until the bootstrap process has finished.  This process can take up to 10 minutes.  Please see [Bootstrap the VM-Series Firewall](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall) for more information.
 
 
-3. Once the VM-Series finishes its deployment, follow the [Accessing the VM-Series firewall](#Accessing-the-VM-Series-firewall) instructions to gain access to the firewall’s web interface.  This step is not required if you are bootstrapping the VM-Series to Panorama.  This is because Panorama pushes the entire configuration to the scaled firewalls.
-
->The metadata within the instance template associated with the instance group defines how the VM-Series receives its local configuration.
+3. Once the VM-Series finishes its deployment, follow the [Access the VM-Series firewall](#access-the-vm-series-firewall) instructions to gain access to the firewall’s web interface.  This step is not required if you are bootstrapping the VM-Series to Panorama.  This is because Panorama pushes the entire configuration to the scaled firewalls.
+    
+    > [!NOTE]
+    > The metadata within the instance template associated with the instance group defines how the VM-Series receives its local configuration.
 
 4. On the scaled VM-Series, navigate to **Monitor → Traffic**.  The traffic logs should be populated demonstrating the scaled VM-Series is now processing traffic. 
 
@@ -408,8 +457,6 @@ The managed instance group created by Terraform sets the minimum and the maximum
 ## Clean up
 
 To avoid incurring charges to your Google Cloud account for the resources you created in this tutorial, delete all the resources when you no longer need them.
-
-
 
 1. Run the following command
     ```

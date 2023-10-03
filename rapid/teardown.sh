@@ -19,7 +19,8 @@
 ################################################################################
 
 cd $(dirname $0)
-
-terraform destroy -auto-approve
+cd ..
+terraform destroy -auto-approve -var-file rapid/rapid.tfvars
+rm rapid/rapid.tfvars 
 
 echo "All resources for this deployment have been deleted."
