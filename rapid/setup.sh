@@ -116,7 +116,7 @@ set_region() {
 }
 
 cd $(dirname $0)
-
+cd ..
 # Create a .tfvars from rapid.tfvars.example
 cp rapid/rapid.tfvars.example terraform.tfvars
 

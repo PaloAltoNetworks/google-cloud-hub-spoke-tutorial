@@ -46,8 +46,8 @@ This tutorial has two deployment options. Both options deploy identical environm
 
 The script, `rapid/setup.sh`, prepares the environment variables and applies the Terraform plan for you.
 
-    > [!IMPORTANT]
-    > This option only supports VM-Series PAYGO Bundle2 (PAN-OS 10.2.2-h2) and does not support bootstrapping to Panorama.
+> [!IMPORTANT]
+> This option only supports VM-Series PAYGO Bundle2 (PAN-OS 10.2.2-h2) and does not support bootstrapping to Panorama.
 
 1. Open [Google Cloud Shell](shell.cloud.google.com) <img src="https://storage.googleapis.com/cloud-training/images/devshell.png" alt="cloudshell.png" />.
 
@@ -72,12 +72,10 @@ The script, `rapid/setup.sh`, prepares the environment variables and applies the
 
     > The `EXTERNAL_LB_IP` output displays the IP address of the external load balancer’s forwarding rule.  The compute resources may take an additional 10 minutes to complete their bootup process.
 
-    > [!NOTE]
-    > You can redisplay the outputs at any time by executing `terraform output` inside the build directory.
-
 4. Proceed to [Access the VM-Series firewall](accessing-the-vm-series-firewall).
 
-
+    > [!NOTE]
+    > You can redisplay the outputs at any time by executing `terraform output` inside the build directory.
 
 
 ## Option 2. Standard deployment
