@@ -31,14 +31,14 @@ The following is required for this tutorial:
 > This tutorial assumes you are using Google Cloud Shell. 
 
 > [!IMPORTANT]
-> The Rapid deployment option only supports VM-Series PAYGO Bundle2 (PAN-OS 10.2.2-h2) and does not support Panorama bootstrapping.
+> The rapid deployment only supports VM-Series PAYGO Bundle2 (PAN-OS 10.2.2-h2) and does not support Panorama bootstrapping.
 
 
 ## (Option 1) Rapid deployment
 
 The script, `rapid/setup.sh`, prepares the environment variables and applies the Terraform plan for you.  This option is best for those who want to quickly test concepts and use-cases.
 
-1. Open [Google Cloud Shell](shell.cloud.google.com) <img src="https://storage.googleapis.com/cloud-training/images/devshell.png" alt="cloudshell.png" />.
+1. Open [Google Cloud Shell](https://shell.cloud.google.com) <img src="https://storage.googleapis.com/cloud-training/images/devshell.png" alt="cloudshell.png" />.
 
 2. When you are ready to deploy, clone the repository and execute the script to build the cloud resources.
 
