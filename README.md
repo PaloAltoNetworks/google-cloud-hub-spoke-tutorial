@@ -25,7 +25,7 @@ The following is required for this tutorial:
 
 1. A Google Cloud project. 
 2. A machine with Terraform version:`">= 0.15.3, < 2.0"`
-3. Choose either the [Rapid](option-1-rapid-deployment) or [Standard](option-2-standard-deployment) deployment option.
+3. Choose either the [Rapid](https://github.com/PaloAltoNetworks/google-cloud-hub-spoke-tutorial/tree/main#option-1-rapid-deployment) or [Standard](https://github.com/PaloAltoNetworks/google-cloud-hub-spoke-tutorial/tree/main#option-2-standard-deployment) deployment option.
 
 > [!NOTE]
 > This tutorial assumes you are using Google Cloud Shell. 
@@ -38,7 +38,7 @@ The following is required for this tutorial:
 
 The script, `rapid/setup.sh`, prepares the environment variables and applies the Terraform plan for you.  This option is best for those who want to quickly test concepts and use-cases.
 
-1. Open [Google Cloud Shell](https://shell.cloud.google.com) <img src="https://storage.googleapis.com/cloud-training/images/devshell.png" alt="cloudshell.png" />.
+1. Open Google Cloud Shell <img src="https://storage.googleapis.com/cloud-training/images/devshell.png" alt="cloudshell.png" />.
 
 2. When you are ready to deploy, clone the repository and execute the script to build the cloud resources.
 
@@ -73,6 +73,8 @@ The script, `rapid/setup.sh`, prepares the environment variables and applies the
 ## (Option 2) Standard deployment
 
 In this deployment option, retrieve the required Terraform files and modify them to deploy the tutorial environment. This deployment option is best for those who want to modify and apply the Terraform plan to best suit their environment use-cases.   
+
+In this deployment option, retrieve the Terraform files and customize them to set up the tutorial environment. This choice is ideal if you want to adapt the Terraform plan to your specific environment and requirements.
 
 ### Prepare for deployment
 
