@@ -14,10 +14,9 @@ Below is a diagram of the tutorial.  VM-Series firewalls are deployed with a reg
 
 | Traffic Pattern        | Description                                                                                                                                                                                                                                                                                                       |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Internet inbound       | Traffic from the internet to applications in the spoke networks are distributed by the External TCP/UDP Load Balancer to the VM-Series untrust interfaces (NIC0). The VM-Series inspects the traffic and forwards permissible traffic through its trust interface (NIC2) to the application in the spoke network. |
-| Internet outbound      | Traffic from the spoke networks destined to the internet is routed to the Internal TCP/UDP Load Balancer in the hub VPC. The VM-Series inspects the traffic and forwards permissible traffic through its untrust interface (NIC0) to the internet.                                                                | 
-| VPC-to-VPC (east-west) | Traffic between spoke networks is routed to the Internal TCP/UDP Load Balancer in the hub VPC. The VM-Series inspects and forwards the traffic through the trust interface (NIC2) into the hub network which routes permissible traffic to the destination spoke network.                                         | 
-
+| Internet inbound       | Traffic from the internet to applications in the spoke networks are distributed by the External TCP/UDP Load Balancer to the VM-Series untrust interfaces (`NIC0`). The VM-Series inspects the traffic and forwards permissible traffic through its trust interface (`NIC2`) to the application in the spoke network. |
+| Internet outbound      | Traffic from the spoke networks destined to the internet is routed to the Internal TCP/UDP Load Balancer in the hub VPC. The VM-Series inspects the traffic and forwards permissible traffic through its untrust interface (`NIC0`) to the internet.                                                                | 
+| VPC-to-VPC (east-west) | Traffic between spoke networks is routed to the Internal TCP/UDP Load Balancer in the hub VPC. The VM-Series inspects and forwards the traffic through the trust interface (`NIC2`) into the hub network which routes permissible traffic to the destination spoke network.                                         | 
 
 
 ## Requirements
@@ -26,29 +25,18 @@ The following is required for this tutorial:
 
 1. A Google Cloud project. 
 2. A machine with Terraform version:`">= 0.15.3, < 2.0"`
+3. Choose either the [Rapid](option-1.-rapid-deployment) or [Standard](option-2.-standard-deployment) deployment option.
 
-    > [!NOTE]
-    > This tutorial assumes you are using Google Cloud Shell. 
-
-
-### Select a deployment option
-
-This tutorial has two deployment options. Both options deploy identical environments. 
-
-| Option       | Description                                                                                                                                           | 
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rapid**    | A startup script (`rapid/startup.sh`) quickly builds the environment.  This option is best for those who want to quickly test concepts and use-cases. |
-| **Standard** | Best for those who want to modify and apply the Terraform plan to best suit their environment use-cases.                                              |
-
-
-
-
-## Option 1. Rapid deployment
-
-The script, `rapid/setup.sh`, prepares the environment variables and applies the Terraform plan for you.
+> [!NOTE]
+> This tutorial assumes you are using Google Cloud Shell. 
 
 > [!IMPORTANT]
-> This option only supports VM-Series PAYGO Bundle2 (PAN-OS 10.2.2-h2) and does not support bootstrapping to Panorama.
+> The Rapid deployment option only supports VM-Series PAYGO Bundle2 (PAN-OS 10.2.2-h2) and does not support Panorama bootstrapping.
+
+
+## (Option 1) Rapid deployment
+
+The script, `rapid/setup.sh`, prepares the environment variables and applies the Terraform plan for you.  This option is best for those who want to quickly test concepts and use-cases.
 
 1. Open [Google Cloud Shell](shell.cloud.google.com) <img src="https://storage.googleapis.com/cloud-training/images/devshell.png" alt="cloudshell.png" />.
 
@@ -71,7 +59,10 @@ The script, `rapid/setup.sh`, prepares the environment variables and applies the
     EXTERNAL_LB_IP = "35.68.75.133"
     ```
 
-    > The `EXTERNAL_LB_IP` output displays the IP address of the external load balancer’s forwarding rule.  The compute resources may take an additional 10 minutes to complete their bootup process.
+    > The `EXTERNAL_LB_IP` output displays the IP address of the external load balancer’s forwarding rule.  
+    
+    > [!IMPORTANT]
+    > The compute resources may take an additional 10 minutes to complete their boot process.
 
 4. Proceed to [Access the VM-Series firewall](accessing-the-vm-series-firewall).
 
@@ -79,9 +70,9 @@ The script, `rapid/setup.sh`, prepares the environment variables and applies the
     > You can redisplay the outputs at any time by executing `terraform output` inside the build directory.
 
 
-## Option 2. Standard deployment
+## (Option 2) Standard deployment
 
-In this deployment option, retrieve the required Terraform files and modify them to deploy the tutorial environment. 
+In this deployment option, retrieve the required Terraform files and modify them to deploy the tutorial environment. This deployment option is best for those who want to modify and apply the Terraform plan to best suit their environment use-cases.   
 
 ### Prepare for deployment
 

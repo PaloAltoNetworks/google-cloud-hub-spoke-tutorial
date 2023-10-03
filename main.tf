@@ -243,12 +243,13 @@ module "lb_internal" {
   source              = "PaloAltoNetworks/vmseries-modules/google//modules/lb_internal"
   name                = "${local.prefix}vmseries-internal-lb"
   region              = var.region
+  project             = var.project_id
   network             = module.vpc_trust.network_id
   subnetwork          = module.vpc_trust.subnets_self_links[0]
   health_check_port   = "80"
   allow_global_access = true
   all_ports           = true
-  # health_check = google_compute_health_check.lb.self_link
+  
   backends = {
     backend1 = module.vmseries.regional_instance_group_id
   }
