@@ -103,14 +103,14 @@ In this deployment option, retrieve the Terraform files and customize them to se
     | `create_spoke_networks` | Set to `false` if you do not want to create the spoke networks.                      | `true`                         |
     | `vmseries_image_name`   | Set to the VM-Series image you want to deploy.                                       | `vmseries-flex-bundle2-1022h2` |
 
-    > [!NOTE]
-    > For `vmseries_image_name`, a full list of public images can be found with this command:
-    > ```
-    > gcloud compute images list \
-    >   --project paloaltonetworksgcp-public \
-    >   --filter='name ~ .*vmseries-flex.*' \
-    >   --format='table(name,PROJECT,status)'
-    > ```
+> [!NOTE]
+> For `vmseries_image_name`, a full list of public images can be found with this command:
+> ```
+> gcloud compute images list \
+>   --project paloaltonetworksgcp-public \
+>   --filter='name ~ .*vmseries-flex.*' \
+>   --format='table(name,PROJECT,status)'
+> ```
 
 4. (Optional) If you are using BYOL image (i.e. `vmseries-flex-byol-*`), the license can be applied during or after deployment.  
    1. To license during deployment:
