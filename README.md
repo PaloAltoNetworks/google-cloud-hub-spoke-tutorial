@@ -74,8 +74,6 @@ The script, `rapid/setup.sh`, prepares the environment variables and applies the
 
 In this deployment option, retrieve the required Terraform files and modify them to deploy the tutorial environment. This deployment option is best for those who want to modify and apply the Terraform plan to best suit their environment use-cases.   
 
-In this deployment option, retrieve the Terraform files and customize them to set up the tutorial environment. This choice is ideal if you want to adapt the Terraform plan to your specific environment and requirements.
-
 ### Prepare for deployment
 
 1. Enable the required APIs, generate an SSH key, and clone the repository. 
