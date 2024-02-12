@@ -192,8 +192,8 @@ When no further changes are necessary in the configuration, deploy the resources
 
     The `EXTERNAL_LB_IP` output displays the IP address of the external load balancer’s forwarding rule.  The compute resources may take an additional 10 minutes to complete their bootup process.
 
-    > [!NOTE]
-    > You can redisplay the outputs at any time by executing `terraform output` inside the build directory.
+> [!NOTE]
+> You can redisplay the outputs at any time by executing `terraform output` inside the build directory.
 
 ## Access the VM-Series firewall
 
@@ -213,8 +213,7 @@ To access the VM-Series user interface, a password must be set for the `admin` u
     ```
     ssh admin@<EXTERNAL_IP> -i ~/.ssh/vmseries-tutorial
     ```
-
-    > [!IMPORTANT]
+    
     > If your login attempt is refused, please wait for the cloud resources to finish booting.
 
 3. On the VM-Series, set a password for the `admin` username. 
@@ -421,13 +420,11 @@ You can modify the minimum and the maximum number of replicas to manually increa
 
 2. Go to **Compute Engine → VM instances**.  A new VM-Series instance should be created.
 
-    > [!NOTE]
     > The load balancers will not send traffic to the VM-Series until the bootstrap process has finished.  This process can take up to 10 minutes.  Please see [Bootstrap the VM-Series Firewall](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall) for more information.
 
 
 3. Once the VM-Series deploys, follow the [Access the VM-Series firewall](#access-the-vm-series-firewall) instructions to gain access to the firewall’s web interface.  
     
-    > [!NOTE]
     > This step is not required if you are bootstrapping the VM-Series to Panorama.  This is because Panorama pushes the entire configuration to the scaled firewalls.
 
 4. On the scaled VM-Series, navigate to **Monitor → Traffic**.  The traffic logs should be populated demonstrating the scaled VM-Series is now processing traffic. 
