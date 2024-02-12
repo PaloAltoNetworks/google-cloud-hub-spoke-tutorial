@@ -61,13 +61,12 @@ The script, `rapid/setup.sh`, prepares the environment variables and applies the
 
     > The `EXTERNAL_LB_IP` output displays the IP address of the external load balancer’s forwarding rule.  
     
-    > [!IMPORTANT]
     > The compute resources may take an additional 10 minutes to complete their boot process.
 
 4. Proceed to [Access the VM-Series firewall](access-the-vm-series-firewall).
 
-    > [!NOTE]
-    > You can redisplay the outputs at any time by executing `terraform output` inside the build directory.
+> [!NOTE]
+> You can redisplay the outputs at any time by executing `terraform output` inside the build directory.
 
 
 ## (Option 2) Standard deployment
