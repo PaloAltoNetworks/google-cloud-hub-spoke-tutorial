@@ -4,13 +4,14 @@ locals {
   vmseries_image_url = "https://www.googleapis.com/compute/v1/projects/paloaltonetworksgcp-public/global/images/${var.vmseries_image_name}"
 }
 
+
 # -------------------------------------------------------------------------------------
 # Create MGMT, UNTRUST, and TRUST VPC networks.  
 # -------------------------------------------------------------------------------------
 
 module "vpc_mgmt" {
   source       = "terraform-google-modules/network/google"
-  version      = "~> 4.0"
+  version      = "~> 9.0"
   project_id   = var.project_id
   network_name = "${local.prefix}mgmt-vpc"
   routing_mode = "GLOBAL"
@@ -43,7 +44,7 @@ module "vpc_mgmt" {
 
 module "vpc_untrust" {
   source       = "terraform-google-modules/network/google"
-  version      = "~> 4.0"
+  version      = "~> 9.0"
   project_id   = var.project_id
   network_name = "${local.prefix}untrust-vpc"
   routing_mode = "GLOBAL"
@@ -75,7 +76,7 @@ module "vpc_untrust" {
 
 module "vpc_trust" {
   source                                 = "terraform-google-modules/network/google"
-  version                                = "~> 4.0"
+  version                                = "~> 9.0"
   project_id                             = var.project_id
   network_name                           = "${local.prefix}hub-vpc"
   routing_mode                           = "GLOBAL"
@@ -108,13 +109,35 @@ module "vpc_trust" {
 
 module "cloud_nat_untrust" {
   source        = "terraform-google-modules/cloud-nat/google"
-  version       = "=1.2"
+  version       = "~> 5.0"
   name          = "${local.prefix}untrust-nat"
   router        = "${local.prefix}untrust-router"
   project_id    = var.project_id
   region        = var.region
   create_router = true
   network       = module.vpc_untrust.network_id
+}
+
+
+
+# -------------------------------------------------------------------------------------
+# Enable session resiliency with Memorystore Redis
+# -------------------------------------------------------------------------------------
+
+resource "google_redis_instance" "main" {
+  count                   = (var.enable_session_resiliency ? 1 : 0)
+  name                    = "${local.prefix}vmseries-redis"
+  project                 = var.project_id
+  region                  = var.region
+  tier                    = "STANDARD_HA"
+  memory_size_gb          = 5
+  replica_count           = 1
+  auth_enabled            = true
+  redis_version           = "REDIS_7_0"
+  connect_mode            = "DIRECT_PEERING"
+  read_replicas_mode      = "READ_REPLICAS_ENABLED"
+  transit_encryption_mode = "SERVER_AUTHENTICATION"
+  authorized_network      = module.vpc_mgmt.network_self_link
 }
 
 
@@ -135,7 +158,7 @@ data "google_compute_subnetwork" "untrust" {
 }
 
 
-# Update bootstrap.xml to reflect any changes made to variables.tf.
+// Update bootstrap.xml to reflect any changes made to variables.tf.
 data "template_file" "bootstrap" {
   template = file("bootstrap_files/bootstrap.template")
 
@@ -150,16 +173,17 @@ data "template_file" "bootstrap" {
 }
 
 
-# Create the bootstrap.xml file.
+// Create the bootstrap.xml file.
 resource "local_file" "bootstrap" {
   filename = "bootstrap_files/bootstrap.xml"
   content  = data.template_file.bootstrap.rendered
 }
 
 
-# Create the bootstrap storage bucket.
+// Create the bootstrap storage bucket.
 module "bootstrap" {
-  source          = "PaloAltoNetworks/vmseries-modules/google//modules/bootstrap"
+  source          = "PaloAltoNetworks/swfw-modules/google//modules/bootstrap"
+  version         = "~> 2.0"
   service_account = module.iam_service_account.email
   location        = "US"
   files = {
@@ -179,25 +203,27 @@ module "bootstrap" {
 # -------------------------------------------------------------------------------------
 
 module "iam_service_account" {
-  source             = "github.com/PaloAltoNetworks/terraform-google-vmseries-modules//modules/iam_service_account?ref=main"
+  source             = "PaloAltoNetworks/swfw-modules/google//modules/iam_service_account"
+  version            = "~> 2.0"
   service_account_id = "${local.prefix}vmseries-mig-sa"
   project_id         = var.project_id
 }
 
 
 module "vmseries" {
-  source                 =  "github.com/PaloAltoNetworks/terraform-google-vmseries-modules//modules/autoscale"
-  name                   = "${local.prefix}vmseries"
-  regional_mig           = true
-  region                 = var.region
-  min_vmseries_replicas  = var.vmseries_replica_minimum // min firewalls per zone.
-  max_vmseries_replicas  = var.vmseries_replica_maximum // max firewalls per zone.
-  image                  = local.vmseries_image_url
-  create_pubsub_topic    = false
-  target_pools           = [module.lb_external.target_pool]
-  service_account_email  = module.iam_service_account.email
-  autoscaler_metrics     = var.autoscaler_metrics
-  tags                   = ["vmseries-tutorial"]
+  source                = "PaloAltoNetworks/swfw-modules/google//modules/autoscale"
+  version               = "~> 2.0"
+  name                  = "${local.prefix}vmseries"
+  regional_mig          = true
+  region                = var.region
+  min_vmseries_replicas = var.vmseries_replica_minimum // min firewalls per zone.
+  max_vmseries_replicas = var.vmseries_replica_maximum // max firewalls per zone.
+  image                 = local.vmseries_image_url
+  create_pubsub_topic   = false
+  target_pools          = [module.lb_external.target_pool]
+  service_account_email = module.iam_service_account.email
+  autoscaler_metrics    = var.autoscaler_metrics
+  tags                  = ["vmseries-tutorial"]
   network_interfaces = [
     {
       subnetwork       = module.vpc_untrust.subnets_self_links[0]
@@ -215,9 +241,16 @@ module "vmseries" {
 
   metadata = {
     mgmt-interface-swap                  = "enable"
-    vmseries-bootstrap-gce-storagebucket = module.bootstrap.bucket_name
     serial-port-enable                   = true
     ssh-keys                             = "admin:${file(var.public_key_path)}"
+    redis-endpoint                       = var.enable_session_resiliency ? "${google_redis_instance.main[0].host}:${google_redis_instance.main[0].port}" : ""
+    redis-auth                           = var.enable_session_resiliency ? "${google_redis_instance.main[0].auth_string}" : ""
+    plugin-op-commands                   = var.enable_session_resiliency ? "set-sess-ress:True" : ""
+    vmseries-bootstrap-gce-storagebucket = var.panorama_ip == null ? module.bootstrap.bucket_name : "" // If Panorama IP is not provided, use to GSC to bootstrap
+    panorama-server                      = var.panorama_ip
+    dgname                               = var.panorama_dg
+    tplname                              = var.panorama_ts
+    vm-auth-key                          = var.panorama_auth_key
   }
 
   scopes = [
@@ -240,16 +273,22 @@ module "vmseries" {
 # -------------------------------------------------------------------------------------
 
 module "lb_internal" {
-  source              = "PaloAltoNetworks/vmseries-modules/google//modules/lb_internal"
-  name                = "${local.prefix}vmseries-internal-lb"
-  region              = var.region
-  project             = var.project_id
-  network             = module.vpc_trust.network_id
-  subnetwork          = module.vpc_trust.subnets_self_links[0]
-  health_check_port   = "80"
-  allow_global_access = true
-  all_ports           = true
-  
+  source                          = "PaloAltoNetworks/swfw-modules/google//modules/lb_internal"
+  version                         = "~> 2.0"
+  name                            = "${local.prefix}vmseries-internal-lb"
+  region                          = var.region
+  project                         = var.project_id
+  network                         = module.vpc_trust.network_id
+  subnetwork                      = module.vpc_trust.subnets_self_links[0]
+  health_check_port               = "80"
+  allow_global_access             = true
+  all_ports                       = true
+  connection_draining_timeout_sec = 30
+
+  connection_tracking_policy = {
+    mode                              = "PER_CONNECTION"
+    persistence_on_unhealthy_backends = "NEVER_PERSIST"
+  }
   backends = {
     backend1 = module.vmseries.regional_instance_group_id
   }
@@ -257,7 +296,8 @@ module "lb_internal" {
 
 
 module "lb_external" {
-  source                         = "PaloAltoNetworks/vmseries-modules/google//modules/lb_external"
+  source                         = "PaloAltoNetworks/swfw-modules/google//modules/lb_external"
+  version                        = "~> 2.0"
   name                           = "${local.prefix}vmseries-external-lb"
   health_check_http_port         = 80
   health_check_http_request_path = "/"

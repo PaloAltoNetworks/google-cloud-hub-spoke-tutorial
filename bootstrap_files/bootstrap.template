@@ -75,64 +75,7 @@
       </report>
     </botnet>
     <admin-role/>
-    <application-status>
-      <entry name="amazon-echo-conntest" status="disabled"/>
-      <entry name="amazon-fire-tablet-conntest" status="disabled"/>
-      <entry name="amazon-fire-tv-conntest" status="disabled"/>
-      <entry name="between-messenger" status="disabled"/>
-      <entry name="brightsign-media-player" status="disabled"/>
-      <entry name="checkmk" status="disabled"/>
-      <entry name="chisel" status="disabled"/>
-      <entry name="dahua-p2p" status="disabled"/>
-      <entry name="excel-messenger" status="disabled"/>
-      <entry name="giphy-base" status="disabled"/>
-      <entry name="giphy-creating" status="disabled"/>
-      <entry name="giphy-downloading" status="disabled"/>
-      <entry name="giphy-uploading" status="disabled"/>
-      <entry name="lontalk-base" status="disabled"/>
-      <entry name="lontalk-apdu" status="disabled"/>
-      <entry name="lontalk-auth-pdu" status="disabled"/>
-      <entry name="lontalk-spdu" status="disabled"/>
-      <entry name="lontalk-tpdu" status="disabled"/>
-      <entry name="net.tcp-deployment-service" status="disabled"/>
-      <entry name="nintendo-conntest" status="disabled"/>
-      <entry name="openadr-base" status="disabled"/>
-      <entry name="openadr-cancel-opt" status="disabled"/>
-      <entry name="openadr-cancel-party-reg" status="disabled"/>
-      <entry name="openadr-cancel-report" status="disabled"/>
-      <entry name="openadr-canceled-opt" status="disabled"/>
-      <entry name="openadr-canceled-party-reg" status="disabled"/>
-      <entry name="openadr-canceled-report" status="disabled"/>
-      <entry name="openadr-create-opt" status="disabled"/>
-      <entry name="openadr-create-party-reg" status="disabled"/>
-      <entry name="openadr-create-report" status="disabled"/>
-      <entry name="openadr-created-event" status="disabled"/>
-      <entry name="openadr-created-opt" status="disabled"/>
-      <entry name="openadr-created-party-reg" status="disabled"/>
-      <entry name="openadr-created-report" status="disabled"/>
-      <entry name="openadr-distribute-event" status="disabled"/>
-      <entry name="openadr-poll" status="disabled"/>
-      <entry name="openadr-query-registration" status="disabled"/>
-      <entry name="openadr-register-report" status="disabled"/>
-      <entry name="openadr-registered-report" status="disabled"/>
-      <entry name="openadr-request-event" status="disabled"/>
-      <entry name="openadr-request-reregistration" status="disabled"/>
-      <entry name="openadr-response" status="disabled"/>
-      <entry name="openadr-update-report" status="disabled"/>
-      <entry name="openadr-updated-report" status="disabled"/>
-      <entry name="paloalto-pa-acs" status="disabled"/>
-      <entry name="paloalto-suppt-case-base" status="disabled"/>
-      <entry name="paloalto-suppt-case-downloading" status="disabled"/>
-      <entry name="paloalto-suppt-case-uploading" status="disabled"/>
-      <entry name="paloalto-user-context" status="disabled"/>
-      <entry name="paloalto-ztna-agent" status="disabled"/>
-      <entry name="pixeldrain" status="disabled"/>
-      <entry name="psexec" status="disabled"/>
-      <entry name="rockwell-factorytalk-viewpoint" status="disabled"/>
-      <entry name="sick-sopas-webserver" status="disabled"/>
-      <entry name="tubitv" status="disabled"/>
-    </application-status>
-    <content-preview/>
+    <application-status/>
   </shared>
   <devices>
     <entry name="localhost.localdomain">
@@ -472,7 +415,7 @@
                       <unicast/>
                     </route-table>
                   </entry>
-                  <entry name="probe-trust-1">
+                  <entry name="lb-check-1">
                     <path-monitor>
                       <enable>no</enable>
                       <failure-condition>any</failure-condition>
@@ -491,7 +434,7 @@
                       <unicast/>
                     </route-table>
                   </entry>
-                  <entry name="probe-trust-2">
+                  <entry name="lb-check-2">
                     <path-monitor>
                       <enable>no</enable>
                       <failure-condition>any</failure-condition>
@@ -510,7 +453,7 @@
                       <unicast/>
                     </route-table>
                   </entry>
-                  <entry name="probe-untrust-1">
+                  <entry name="lb-check-3">
                     <path-monitor>
                       <enable>no</enable>
                       <failure-condition>any</failure-condition>
@@ -529,7 +472,7 @@
                       <unicast/>
                     </route-table>
                   </entry>
-                  <entry name="probe-untrust-2">
+                  <entry name="lb-check-4">
                     <path-monitor>
                       <enable>no</enable>
                       <failure-condition>any</failure-condition>
@@ -561,7 +504,7 @@
               <send-hostname>yes</send-hostname>
               <send-client-id>no</send-client-id>
               <accept-dhcp-hostname>yes</accept-dhcp-hostname>
-              <accept-dhcp-domain>no</accept-dhcp-domain>
+              <accept-dhcp-domain>yes</accept-dhcp-domain>
             </dhcp-client>
           </type>
           <update-server>updates.paloaltonetworks.com</update-server>
@@ -620,13 +563,13 @@
           <management>
             <hostname-type-in-syslog>FQDN</hostname-type-in-syslog>
             <initcfg>
-              <public-key>c3NoLXJzYSBBQUFBQjNOemFDMXljMkVBQUFBREFRQUJBQUFCZ1FDN3lqOWovZXlOZnBRRjB4MXlmc05HRHlpM3NRY0hKRk4ydlBqTW04MjFHcmRQRURyU1hlS0ZyQnVMSE5Sbk91c3lSNVZKRUd1aG55dy83emRtSDJDM1FyQ2RQU0JOYnl5L3VKeTZNSzBuYUJIWlVCKzAySlJJdEFxNWV2TnYrczZtM3lXVWgyb2RPVVhEYUVtOS82aXBVcXhmTXVISTBoNVNhcHdrTmg1cXNJVU5TR0U0ZUFsU2YrZzVYMmc3aU1jY2dOQ2lrSzd1Y294SEZTZmE0NmlYV1hGc2ZITEt3bkwyekZPdFhBd21QU1dBT3drVVR5M2hmN2hyZlRhNEJhQXdMb1duWGJhaERrUDc0cVNkc056U0NMNWJQdVFiU3pScW0rbkpneEErVUZtclUrZWs0RExKb2VMZFlCUndrRGgvK2RqbWFzNExyVmVBeGVEc05jblFibGsxYmEyOWNqeDloKzRJZ25xUXlrMnVncDBxYkdGVC96eThDc1VhelovWmJxeWlzT21wS2RXeHpJdHU2M3VuK0FEVTRiNWpmREZFRVpVQmUrRHA3TXdVSkk1c0lhUnBRbWNsdVBaMG5HbFl0RENHeDhnYWpKQzJQaEpMODM3djdDZ1o0cjdQQTRrVVVzWUlKcDdXOVhxbjZiNVRyWWJzSlgzWS9SS1hUY1U9IG1hdHRAY3MtODIwOTM1OTM4MjQwLWRlZmF1bHQ=</public-key>
+              <public-key>c3NoLXJzYSBBQUFBQjNOemFDMXljMkVBQUFBREFRQUJBQUFCZ1FEcVBpNkJmWUphYVMrVnJyOHVvWFhoK1JxRU9NY1hZTTU5czBuc2c1NlkyRGlUMkJVNktQQlRGb0JzOTdTMytYUC9hbmk2Qmd6QlpyZVNOeUNpSWV6UHhDNG5KQm83U25PbUlvM1BmaWJZK2d1UnJ5SVBHU29WSXJSemdjVmQvbmZQZGtCOUlrNEo2QVcweDVSOC9EUVhBa2UvckM4ZDBiRnNsSGNJc1h3K2ZSaU5LSzRLdEovS05IYlNOL05panY0ZkZZT3I2b051UmdXUVBYNDg4NTJNT0IrWTh1NUZsc2F0QXQrKzQvTkMvS0dtazFrRTVlTS9IcVhWZ1RtbDBPS2Q5UEhBRnFMMnFCcWk5Q21XbTN3WG1Leis4elpCdEY5dUpqWDJqbmN6YUtkTEJlYi9tRFFBbDBKYlJnc0l2NFpLTDhKQThqbGR4aTZUMEhXRU02dWV1VUwzVXNaUXdOVld5ZGcrbzRaTXYvSm1HdzFpMlk2OG8zT0NORjB2SmNQajdkcWF3RW9TVWxrNnd6clZxWW9mY3N6TkhZUFNQL045ZUpYUWdBWnRjWURUcmo3K1dUakdvMDJ5NDArZXN4QXM1enZUTS9HUzdUQVl4OWFmcTRzdk4waWpHK05MUUwwVjUrRDQwcXNVNTB1RVpTQXZMR0dVQkF1QW93Umt2cms9IG1tY2xpbWFuc0BNLUNUN0hMNFhYN0o=</public-key>
               <type>
                 <dhcp-client>
                   <send-hostname>yes</send-hostname>
                   <send-client-id>no</send-client-id>
                   <accept-dhcp-hostname>yes</accept-dhcp-hostname>
-                  <accept-dhcp-domain>no</accept-dhcp-domain>
+                  <accept-dhcp-domain>yes</accept-dhcp-domain>
                 </dhcp-client>
               </type>
               <dns-primary>169.254.169.254</dns-primary>
@@ -660,6 +603,12 @@
               <network>
                 <layer3>
                   <member>ethernet1/2</member>
+                </layer3>
+              </network>
+            </entry>
+            <entry name="lb-checks">
+              <network>
+                <layer3>
                   <member>loopback.1</member>
                 </layer3>
               </network>
@@ -690,6 +639,16 @@
               <protocol>
                 <tcp>
                   <port>8080</port>
+                  <override>
+                    <no/>
+                  </override>
+                </tcp>
+              </protocol>
+            </entry>
+            <entry name="tcp-5001">
+              <protocol>
+                <tcp>
+                  <port>5001</port>
                   <override>
                     <no/>
                   </override>
@@ -796,7 +755,7 @@
                     <member>untrust</member>
                   </from>
                   <source>
-                    <member>google-health-checks</member>
+                    <member>lb-checks</member>
                   </source>
                   <destination>
                     <member>any</member>
@@ -815,7 +774,7 @@
                     <member>trust</member>
                   </from>
                   <source>
-                    <member>google-health-checks</member>
+                    <member>lb-checks</member>
                   </source>
                   <destination>
                     <member>any</member>
@@ -959,6 +918,42 @@
                     </profiles>
                   </profile-setting>
                 </entry>
+                <entry name="session-resiliency-test" uuid="4e7dc7e5-07be-4d70-b1e2-ec5bafc1df0d">
+                  <to>
+                    <member>trust</member>
+                  </to>
+                  <from>
+                    <member>trust</member>
+                  </from>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>tcp-5001</member>
+                  </service>
+                  <source-hip>
+                    <member>any</member>
+                  </source-hip>
+                  <destination-hip>
+                    <member>any</member>
+                  </destination-hip>
+                  <action>allow</action>
+                  <rule-type>universal</rule-type>
+                  <description>Security policy to test session resiliency with Google Cloud Memorystore for Redis.</description>
+                  <log-start>yes</log-start>
+                </entry>
                 <entry name="east-west" uuid="8b47fd96-dcee-4b01-bda8-8f45d4d8ce48">
                   <to>
                     <member>trust</member>
@@ -1081,15 +1076,15 @@
                     </profiles>
                   </profile-setting>
                 </entry>
-                <entry name="health-probe" uuid="650b505d-d106-4e15-b1fb-24f2baf88946">
+                <entry name="health-checks" uuid="650b505d-d106-4e15-b1fb-24f2baf88946">
                   <to>
-                    <member>any</member>
+                    <member>lb-checks</member>
                   </to>
                   <from>
                     <member>any</member>
                   </from>
                   <source>
-                    <member>google-health-checks</member>
+                    <member>lb-checks</member>
                   </source>
                   <destination>
                     <member>any</member>
@@ -1186,14 +1181,14 @@
                 <member>internal-ip</member>
               </tag>
             </entry>
-            <entry name="google-probe-1">
+            <entry name="lb-check-1">
               <ip-netmask>35.191.0.0/16</ip-netmask>
               <tag>
                 <member>google-ip</member>
               </tag>
               <description>Google HTTPS &amp; TCP load balancer health probe range.</description>
             </entry>
-            <entry name="google-probe-2">
+            <entry name="lb-check-2">
               <ip-netmask>130.211.0.0/22</ip-netmask>
               <tag>
                 <member>google-ip</member>
@@ -1225,14 +1220,14 @@
                 <member>internal-ip</member>
               </tag>
             </entry>
-            <entry name="google-probe-3">
+            <entry name="lb-check-3">
               <ip-netmask>209.85.152.0/22</ip-netmask>
               <tag>
                 <member>google-ip</member>
               </tag>
               <description>Google TCP load balancer health probe range.</description>
             </entry>
-            <entry name="google-probe-4">
+            <entry name="lb-check-4">
               <ip-netmask>209.85.204.0/22</ip-netmask>
               <tag>
                 <member>google-ip</member>
@@ -1260,15 +1255,18 @@
             <entry name="internal-ip">
               <color>color25</color>
             </entry>
+            <entry name="lb-checks">
+              <color>color15</color>
+            </entry>
           </tag>
           <address-group>
-            <entry name="google-health-checks">
+            <entry name="lb-checks">
               <static>
                 <member>google-metadata-server</member>
-                <member>google-probe-1</member>
-                <member>google-probe-2</member>
-                <member>google-probe-3</member>
-                <member>google-probe-4</member>
+                <member>lb-check-1</member>
+                <member>lb-check-2</member>
+                <member>lb-check-3</member>
+                <member>lb-check-4</member>
               </static>
               <tag>
                 <member>google-ip</member>

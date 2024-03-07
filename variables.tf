@@ -27,6 +27,29 @@ variable "region" {
 # -------------------------------------------------------------------------------------
 # Optional variables
 # -------------------------------------------------------------------------------------
+variable "panorama_ip" {
+  description = "IP address of Panorama to centrally manage the VM-Series."
+  default     = null
+  type        = string
+}
+
+variable "panorama_dg" {
+  description = "Panorama Device Group to bootstrap the VM-Series."
+  default     = null
+  type        = string
+}
+
+variable "panorama_ts" {
+  description = "Panorama Template Stack to bootstrap the VM-Series."
+  default     = null
+  type        = string
+}
+
+variable "panorama_auth_key" {
+  description = "Panorama Auth key to authenticate the VM-Sereis as a managed device."
+  default     = null
+  type        = string
+}
 
 variable "vmseries_image_name" {
   description = "Name of the VM-Series image within the paloaltonetworksgcp-public project.  To list available images, run: `gcloud compute images list --project paloaltonetworksgcp-public --no-standard-images`. If you are using a custom image in a different project, please update `local.vmseries_iamge_url` in `main.tf`."
@@ -65,6 +88,12 @@ variable "autoscaler_metrics" {
       target = 100
     }
   }
+}
+
+variable "enable_session_resiliency" {
+  description = "If true, a Memorystore Redis Cluster will be created to store session information across the VM-Series firewalls"
+  type        = bool
+  default     = false
 }
 
 variable "cidr_mgmt" {

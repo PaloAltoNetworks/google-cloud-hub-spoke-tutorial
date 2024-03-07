@@ -14,66 +14,22 @@ Below is a diagram of the tutorial.  VM-Series firewalls are deployed with a reg
 
 | Traffic Pattern        | Description                                                                                                                                                                                                                                                                                                       |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Internet inbound       | Traffic from the internet to applications in the spoke networks are distributed by the External TCP/UDP Load Balancer to the VM-Series untrust interfaces (`NIC0`). The VM-Series inspects the traffic and forwards permissible traffic through its trust interface (`NIC2`) to the application in the spoke network. |
-| Internet outbound      | Traffic from the spoke networks destined to the internet is routed to the Internal TCP/UDP Load Balancer in the hub VPC. The VM-Series inspects the traffic and forwards permissible traffic through its untrust interface (`NIC0`) to the internet.                                                                | 
-| VPC-to-VPC (east-west) | Traffic between spoke networks is routed to the Internal TCP/UDP Load Balancer in the hub VPC. The VM-Series inspects and forwards the traffic through the trust interface (`NIC2`) into the hub network which routes permissible traffic to the destination spoke network.                                         | 
-
+| Internet inbound       | Traffic from the internet to apps hosted in the spoke VPCs is distributed by the External Load Balancer to the VM-Series untrust interfaces (`NIC0`). The VM-Series translates the traffic through its trust interface (`NIC2`) to the spoke network. |
+| Internet outbound      | Traffic from the spoke VPCs to the internet is routed to the internal load balancer balancer in the trust VPC. The VM-Series translates the traffic through its untrust interface (`NIC0`) to the internet destination.                                                                | 
+| East-west (Intra & Inter VPC) | Traffic between networks (**inter-VPC**) and traffic within a network (**intra-VPC**) is routed to the internal load balancer in the trust VPC via [Policy-Based routes](https://cloud.google.com/vpc/docs/policy-based-routes). The VM-Series inspects and hairpins the traffic through the trust interface (`NIC2`) and to the destination. |
 
 ## Requirements
 
 The following is required for this tutorial:
 
 1. A Google Cloud project. 
-2. A machine with Terraform version:`">= 0.15.3, < 2.0"`
-3. Choose either the [Rapid](https://github.com/PaloAltoNetworks/google-cloud-hub-spoke-tutorial/tree/main#option-1-rapid-deployment) or [Standard](https://github.com/PaloAltoNetworks/google-cloud-hub-spoke-tutorial/tree/main#option-2-standard-deployment) deployment option.
+2. A machine with Terraform version:`"~> 1.7"`
 
 > [!NOTE]
 > This tutorial assumes you are using Google Cloud Shell. 
 
-> [!IMPORTANT]
-> The rapid deployment only supports VM-Series PAYGO Bundle2 (PAN-OS 10.2.2-h2) and does not support Panorama bootstrapping.
 
-
-## (Option 1) Rapid deployment
-
-The script, `rapid/setup.sh`, prepares the environment variables and applies the Terraform plan for you.  This option is best for those who want to quickly test concepts and use-cases.
-
-1. Open Google Cloud Shell <img src="https://storage.googleapis.com/cloud-training/images/devshell.png" alt="cloudshell.png" />.
-
-2. When you are ready to deploy, clone the repository and execute the script to build the cloud resources.
-
-    ```
-    git clone https://github.com/PaloAltoNetworks/google-cloud-hub-spoke-tutorial
-    ./google-cloud-hub-spoke-tutorial/rapid/setup.sh
-    ```
-
-3. Provide the appropriate responses for each scripted prompt. 
-
-4. After all the resources are created, the script displays the following message:
-
-    ```
-    Apply complete!
-
-    Outputs:
-
-    EXTERNAL_LB_IP = "35.68.75.133"
-    ```
-
-    > The `EXTERNAL_LB_IP` output displays the IP address of the external load balancer’s forwarding rule.  
-    
-    > The compute resources may take an additional 10 minutes to complete their boot process.
-
-4. Proceed to [Access the VM-Series firewall](access-the-vm-series-firewall).
-
-> [!NOTE]
-> You can redisplay the outputs at any time by executing `terraform output` inside the build directory.
-
-
-## (Option 2) Standard deployment
-
-In this deployment option, retrieve the required Terraform files and modify them to deploy the tutorial environment. This deployment option is best for those who want to modify and apply the Terraform plan to best suit their environment use-cases.   
-
-### Prepare for deployment
+## Prepare for Deployment
 
 1. Enable the required APIs, generate an SSH key, and clone the repository. 
 
@@ -84,7 +40,7 @@ In this deployment option, retrieve the required Terraform files and modify them
     cd google-cloud-hub-spoke-tutorial
     ```
 
-2. Create a `terraform.tfvars`.
+2. Create a `terraform.tfvars` file.
 
     ```
     cp terraform.tfvars.example terraform.tfvars
@@ -92,82 +48,49 @@ In this deployment option, retrieve the required Terraform files and modify them
 
 3. Edit the `terraform.tfvars` file and set values for the following variables:
 
-    | Key                     | Value                                                                                | Default                        |
-    | ----------------------- | ------------------------------------------------------------------------------------ | ------------------------------ |
-    | `project_id`            | The Project ID within Google Cloud.                                                  | `null`                         |
-    | `public_key_path`       | The local path of the public key you previously created                              | `~/.ssh/vmseries-tutorial.pub` |
-    | `mgmt_allow_ips`        | A list of IPv4 addresses that can have access to the VM-Series management interface. | `["0.0.0.0/0"]`                |
-    | `create_spoke_networks` | Set to `false` if you do not want to create the spoke networks.                      | `true`                         |
-    | `vmseries_image_name`   | Set to the VM-Series image you want to deploy.                                       | `vmseries-flex-bundle2-1022h2` |
+    | Key                         | Value                                                                                | Default                        |
+    | --------------------------- | ------------------------------------------------------------------------------------ | ------------------------------ |
+    | `project_id`                | The Project ID within Google Cloud.                                                  | `null`                         |
+    | `public_key_path`           | The local path of the public key you previously created                              | `~/.ssh/vmseries-tutorial.pub` |
+    | `mgmt_allow_ips`            | A list of IPv4 addresses which have access to the VM-Series management interface.    | `["0.0.0.0/0"]`                |
+    | `create_spoke_networks`     | Set to `false` if you do not want to create the spoke networks.                      | `true`                         |
+    | `vmseries_image_name`       | Set to the VM-Series image you want to deploy.                                       | `vmseries-flex-bundle2-1022h2` |
+    | `enable_session_resiliency` | Set to `true` to enable [Session Resiliency](https://docs.paloaltonetworks.com/vm-series/11-1/vm-series-deployment/set-up-the-vm-series-firewall-on-google-cloud-platform/deploy-vm-series-on-gcp/enable-session-resiliency-on-vm-series-for-gcp) using [Memorystore for Redis](https://cloud.google.com/memorystore/docs/redis/memorystore-for-redis-overview).              | `false`                        |
 
-> [!NOTE]
+> [!TIP]
 > For `vmseries_image_name`, a full list of public images can be found with this command:
 > ```
-> gcloud compute images list \
->   --project paloaltonetworksgcp-public \
->   --filter='name ~ .*vmseries-flex.*' \
->   --format='table(name,PROJECT,status)'
+> gcloud compute images list --project paloaltonetworksgcp-public --filter='name ~ .*vmseries-flex.*'
 > ```
 
-4. (Optional) If you are using BYOL image (i.e. `vmseries-flex-byol-*`), the license can be applied during or after deployment.  
-   1. To license during deployment:
-      - [Contact](https://www.paloaltonetworks.com/company/contact-sales) your Palo Alto Networks sales representative to receive the licenses.
-      - [Create a Support Account](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/license-the-vm-series-firewall/create-a-support-account#id4032767e-a4a8-4f5a-9df2-48f5d63780ba) and [create a deployment profile](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/license-the-vm-series-firewall/software-ngfw/create-a-deployment-profile-vm-series).
-      - Add the **VM-Series Auth-Code** to `bootstrap_files/authcodes`. 
-   2. Save your `terraform.tfvars` file.
+> [!NOTE]
+> If you are using BYOL image (i.e. `vmseries-flex-byol-*`), the license can be applied during or after deployment.  To license during deployment, add your VM-Series Authcodes to `bootstrap_files/authcodes`.  See [VM-Series Bootstrap Methods](https://docs.paloaltonetworks.com/vm-series/11-1/vm-series-deployment/bootstrap-the-vm-series-firewall) for more information.  
+
+
+4. Save your `terraform.tfvars` file.
 
 
 ### (Optional) Bootstrap to Panorama
-In production environments, it is highly recommended to use [Panorama](https://docs.paloaltonetworks.com/panorama/10-2/panorama-admin/manage-firewalls) to manage the VM-Series firewalls deployed within the instance group.  
+In production environments, it is highly recommended to use [Panorama](https://docs.paloaltonetworks.com/panorama/10-2/panorama-admin/manage-firewalls) to manage the VM-Series.  Panorama enables you to scale the VM-Series for performance while managing the them as a single entity. 
 
-Panorama enables you to seamlessly scale the VM-Series for performance, while managing the firewalls as a single entity.  As new firewalls are deployed, the metadata defined within the instance template automatically bootstraps the firewalls to Panorama.  Then, Panorama licenses and pushes the configuration to the firewalls.
-
-
-#### Panorama Bootstrap Prerequisites 
-* An existing Panorama appliance.
-  * If you do not have Panorama deployed, you can deploy Panorama via [Terraform](https://github.com/PaloAltoNetworks/terraform-google-vmseries-modules/tree/main/examples/panorama) or through the [Google Cloud Marketplace](https://www.paloaltonetworks.com/resources/guides/panorama-on-gcp-deployment-guide).
-* A baseline configuration for Panorama to successfully bootstrap the VM-Series firewall.  For assistance with this configuration, please see the [Panorama Staging](docs/panorama_staging.md) community guide. 
+For more information, see the [Panorama Staging](docs/panorama_staging.md) community guide.
 
 #### Modify Terraform to Bootstrap to Panorama
-
-1. In `main.tf`, comment/delete the `config/bootstrap.xml` within the `bootstrap` module.  This removes the local firewall configuration from the bootstrap storage bucket.
-
-    <pre>
-    module "bootstrap" {
-    source          = "PaloAltoNetworks/vmseries-modules/google//modules/bootstrap"
-    service_account = module.iam_service_account.email
-    location        = "US"
-    files = {
-        "bootstrap_files/init-cfg.txt"                               = "config/init-cfg.txt"
-      <b># "${local_file.bootstrap.filename}"                           = "config/bootstrap.xml"</b>
-        "bootstrap_files/content/panupv2-all-contents-8622-7593"     = "content/panupv2-all-contents-8622-7593"
-        "bootstrap_files/content/panup-all-antivirus-4222-4735"      = "content/panup-all-antivirus-4222-4735"
-        "bootstrap_files/content/panupv3-all-wildfire-703414-706774" = "content/panupv3-all-wildfire-703414-706774"
-        "bootstrap_files/authcodes"                                  = "license/authcodes"
-    }
-    }
-    </pre>
-   
-2. In `bootstrap_files/init-cfg.txt`, specify values to match your Panorama's address, device group, template stack, and VM authorization key. See the [Panorama Staging](docs/panorama_staging.md) community guide for more information. 
+1. In your `terraform.tfvars` set values for your Panorama IP, device group, template stack, and VM Auth Key. 
 
     <pre>
-    type=dhcp-client
-    ip-address=
-    default-gateway=
-    netmask=
-    ipv6-address=
-    ipv6-default-gateway=
-    dhcp-accept-server-hostname=yes
-    dns-primary=169.254.169.254
-    dns-secondary=8.8.8.8
-    op-command-modes=mgmt-interface-swap
-    panorama-server=<b>5.5.5.5</b>
-    vm-auth-key=<b>1234123412341234</b>
-    dgname=<b>my-panorama-device-group</b>
-    tplname=<b>my-panorama-template-stack</b>
+    panorama_ip       = <b>"1.1.1.1"</b>
+    panorama_dg       = <b>"your-device-group"</b>
+    panorama_ts       = <b>"your-template-stack"</b>
+    panorama_auth_key = <b>"your-auth-key"</b>
     </pre>
 
-3. Proceed to [Deploy](#deploy).
+2. Save your `terraform.tfvars`.
+
+>[!NOTE]
+> In this Terraform plan, setting a value for `panorama_ip` removes the GCS Storage Bucket from the VM-Series metadata configuration.
+
+
 
 ### Deploy
 
@@ -190,16 +113,14 @@ When no further changes are necessary in the configuration, deploy the resources
     EXTERNAL_LB_IP = "35.68.75.133"
     ```
 
-    The `EXTERNAL_LB_IP` output displays the IP address of the external load balancer’s forwarding rule.  The compute resources may take an additional 10 minutes to complete their bootup process.
-
 > [!NOTE]
-> You can redisplay the outputs at any time by executing `terraform output` inside the build directory.
+> The `EXTERNAL_LB_IP` output displays the IP address of the external load balancer’s forwarding rule.
 
 ## Access the VM-Series firewall
 
 To access the VM-Series user interface, a password must be set for the `admin` user.
 
-1. Retrieve the `EXTERNAL_IP` attached to the VM-Series interface.
+1. Retrieve the `EXTERNAL_IP` attached to the VM-Series MGT interface (`NIC1`).
 
     ```
     gcloud compute instances list \
@@ -207,14 +128,11 @@ To access the VM-Series user interface, a password must be set for the `admin` u
         --format='value(EXTERNAL_IP)'
     ```
 
-
 2. SSH to the VM-Series using the `EXTERNAL_IP` with your private SSH key. 
 
     ```
     ssh admin@<EXTERNAL_IP> -i ~/.ssh/vmseries-tutorial
     ```
-    
-    > If your login attempt is refused, please wait for the cloud resources to finish booting.
 
 3. On the VM-Series, set a password for the `admin` username. 
 
@@ -223,216 +141,248 @@ To access the VM-Series user interface, a password must be set for the `admin` u
     set mgt-config users admin password
     ```
 
-
 4. Commit the changes.
     ```
     commit
     ```
 
-
 5. Enter `exit` twice to terminate the session.
-6. Access the VM-Series web interface using a web browser.  Login with the user `admin`  and the password you configured.
+
+6. Access the VM-Series web interface using a web browser.  Login with the `admin` user and password.
 
     ```
     https://<EXTERNAL_IP>
     ```
 
-    <img src="images/login.png" width="500">
-
-    
-
 ## Internet inbound traffic
 
-Internet traffic is distributed by an external TCP/UDP load balancer to the VM-Series untrust interfaces. The VM-Series inspects and translates the traffic to `VM A` in the `spoke 1` network. `VM A`  runs a generic web service and Jenkins.
+Internet traffic is distributed by the external load balancer to the VM-Series untrust interfaces. The VM-Series inspects and translates the traffic to `spoke1-vm1` in the `spoke 1` network.
 
 <img src="images/diagram_ingress.png">
 
+> [!IMPORTANT]
+> The spoke VMs in this tutorial are configured with Jenkins and a generic web service.
 
-
-
-1. Open a HTTP connection to the web service on `VM A` by copying the `EXTERNAL_LB_IP` value into a web browser.
+1. Open a HTTP connection to the web service on `spoke1-vm1` by copying the `EXTERNAL_LB_IP` output value into a web browser.
 
     ```
     http://<EXTERNAL_LB_IP>
     ```
 
-    <img src="images/ss01.png" width="500">
+    <img src="images/ss01.png" width="50%">
 
 
-
-
-2. Open a session to the Jenkins service on `VM A` by appending port `8080` to the URL.
+2. Open a session to the Jenkins service on `spoke1-vm1` by appending port `8080` to the URL.
 
     ```
     http://<EXTERNAL_LB_IP>:8080
     ```
 
-    <img src="images/ss02.png" width="500">
+    <img src="images/ss02.png" width="50%">
 
-    > The request to the Jenkins server fails because the Jenkins application has not been enabled in the VM-Series security policies.  Palo Alto Networks firewalls leverage [App-ID](https://www.paloaltonetworks.com/technologies/app-id)™ to identify and enable applications with layer-7 controls. 
+> [!TIP]
+> Your request to Jenkins should fail.  This is because its App-ID™ has not been enabled on the VM-Series, yet.
 
 
 ### Safely enabling applications with App-ID™ 
 
-Palo Alto Networks App-ID™ enables you to see applications on your network and learn their behavioral characteristics with their relative risk.  You can use App-ID™ to enable Jenkins traffic through the VM-Series security policies.
+Palo Alto Networks [App-ID™](https://www.paloaltonetworks.com/technologies/app-id) enables you to see applications on your network and learn their behavioral characteristics with their relative risk.  You can use App-ID™ to enable Jenkins traffic through the VM-Series security policies.
 
+1. On the VM-Series, go to **Policies → Security** and open the `inbound-web` security policy.
+    
+2. In the **Application** tab, add the `jenkins` App-ID.  Click **OK**.
 
-
-1. On the VM-Series, go to **Policies → Security**. Click the allowed applications column within the `inbound-web` security policy. 
-
-
-    <img src="images/ss03.png" width="1500">
-
-
-2. Click **ADD** and search for `jenkins`.  Click **OK**.
-
-
-    <img src="images/ss04.png" width="350">
-
+    <img src="images/ss03.png">
 
 3. Click **Commit → Commit** to apply the changes to the VM-Series configuration.
 
+4. Attempt to access the `jenkins` service again.  The page should now resolve.
 
-    <img src="images/ss05.png" width="1500">
+    <img src="images/ss04.png" width="50%">
 
-
-4. Access the Jenkins service again.  The Jenkins page resolves because you enabled the `jenkins` application on the VM-Series security policy.  
-
-
-    <img src="images/ss06.png" width="500">
-
-
-5. On the VM-Series, go to **Monitor → Traffic** to view the traffic logs.  Enter the query below to filter for `jenkins` traffic. 
+5. On the VM-Series, go to **Monitor → Traffic** and enter the filter below to search for `jenkins` traffic.
 
     ```
     ( app eq jenkins )
     ```
 
-    <img src="images/ss07.png" width="1500">
+    <img src="images/ss05.png">
 
-
-
-    > The `jenkins` application was denied before the `jenkins` application was added to the **inbound-web** security policy. This is because all Palo Alto Networks firewalls use multiple identification techniques to determine the exact identity of applications traversing your network, including those that try to evade detection by masquerading as legitimate traffic, by hopping ports or by using encryption.
+> [!TIP]
+> You should see the jenkins traffic was denied before its App-ID was added to the security policy.
 
 
 ### Internet outbound & east/west traffic 
 
-The VM-Series secures outbound internet traffic from the spoke networks and east-west traffic traversing between spoke networks.  All egress traffic from the spoke networks is routed to an internal TCP/UDP load balancer that distributes traffic to the VM-Series trust interfaces for inspection.
-
+[Policy based routes](https://cloud.google.com/vpc/docs/policy-based-routes) & [custom static routes](https://cloud.google.com/vpc/docs/routes) defined within the spoke's route table steer traffic to the VM-Series internal load balancer. This enables the VM-Series to secure egress traffic from the spoke networks, including: outbound internet, inter-VPC, and intra-VPC traffic. 
 
 <img src="images/diagram_egress.png">
 
 
-1. Establish an SSH session with `VM B` in the `Spoke 2` network.  The external load balancer distributes the request to the VM-Series.  The VM-Series inspects and translates the traffic to `VM B`. 
+1. Open an SSH session with `spoke2-vm1`.  
 
     ```
     ssh paloalto@<EXTERNAL_LB_IP> -i ~/.ssh/vmseries-tutorial
     ```
+    > The external load balancer distributes the request to the VM-Series.  The VM-Series inspects and translates the traffic to `spoke2-vm1`. 
 
 
-2. Attempt to download a pseudo malicious file from the internet.  Note, the file is safe and is used for threat prevention testing only.  
+
+2. Test **outbound internet** inspection by downloading at pseudo malicious file from the internet.
 
     ```
-    wget www.eicar.org/download/eicar.com.txt
+    wget www.eicar.eu/eicar.com.txt --tries 1 --timeout 2
     ```
 
 
-3. Generate pseudo malicious traffic between `VM B` and `VM A`.
+3. Test **inter-vpc** inspection by generating pseudo malicious traffic between `spoke2-vm1` and `spoke1-vm1`.
 
     ```
     curl http://10.1.0.10/cgi-bin/../../../..//bin/cat%20/etc/passwd
-
-    curl -H 'User-Agent: () { :; }; 123.123.123.123:9999' http://10.1.0.10/cgi-bin/test-critical
     ```
 
+4. Test **intra-vpc** inspection by generating pseudo malicious traffic between `spoke2-vm1` and `spoke2-vm2`.
+
+    ```
+    curl -H 'User-Agent: () { :; }; 123.123.123.123:9999' http://10.2.0.11/cgi-bin/test-critical
+    ```
 
 4. On the VM-Series, go to **Monitor → Threat** to view the threat logs.  
 
-    <img src="images/ss08.png" width="1500"> 
+    <img src="images/ss06.png"> 
 
-    The firewall’s security policies enable you to allow or block traffic on your network based on the user, application, and device.  When traffic matches the allow rule defined in the security policy,  the security profiles that are attached to the rule provide further content inspection.  Security profiles include:
+> [!TIP]
+> The security policies enable you to allow or block traffic based on the user, application, and device.  When traffic matches an allow rule, the security profiles that are attached to the rule provide further content inspection. See [Cloud-Delivered Security Services](https://www.paloaltonetworks.com/network-security/security-subscriptions) for more information.
 
-      * [Antivirus](https://docs.paloaltonetworks.com/network-security/security-policy/security-profiles/security-profile-antivirus)
-      * [Anti-Spyware](https://docs.paloaltonetworks.com/network-security/security-policy/security-profiles/security-profile-anti-spyware)
-      * [Vulnerability Protection](https://docs.paloaltonetworks.com/network-security/security-policy/security-profiles/security-profile-vulnerability-protection)
-      * [URL Filtering](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/url-filtering/url-filtering-overview)
-      * [File Blocking](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/threat-prevention/set-up-file-blocking#idab30127f-3fb2-4a84-99e6-30d7009860fc)
-      * [WildFire Analysis](https://docs.paloaltonetworks.com/wildfire/10-2/wildfire-admin/wildfire-overview/about-wildfire) 
+
 
 
 ## Autoscaling the VM-Series
 
-This tutorial uses a regional managed instance group to deploy and scale VM-Series firewalls across zones within a region.  Autoscaling enables you to scale the security protecting your cloud assets while providing high availability through cross-zone redundancy. 
+Regional managed instance groups enable you to scale VM-Series across zones within a region.  This allows you to scale the security protecting cloud workloads. 
+
+The VM-Series publishes PAN-OS metrics to Google Cloud Monitoring.   
 
 
-### Viewing metrics in Cloud Monitoring
+### View custom metrics in Cloud Monitoring
 
-The VM-Series firewall can publish native PAN-OS metrics to Google Cloud Monitoring.   Each metric can be set as an autoscaling parameter within the managed instance group.  Custom PAN-OS metrics include: 
+The Terraform plan creates a custom Cloud Monitoring dashboard that displays the VM-Series performance metrics.  To view the dashboard, perform the following: 
 
-* Dataplane CPU utilization
-* Dataplane packet buffer utilization
-* New connections per second
-* Throughput (Kbps)
-* Throughput (packets per second)
-* Total number of active sessions
-* Session utilization
-* SSL forward proxy utilization
-
-See [custom PAN-OS metrics published for monitoring](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/about-the-vm-series-firewall/custom-pan-os-metrics-published-for-monitoring) for more information. 
-
-The Terraform plan creates a custom Cloud Monitoring dashboard that displays several of the VM-Series metrics.  To view the dashboard, perform the following: 
-
-1. In the Google Cloud console, select **Monitoring → Dashboards**.  
+1. In the Google Cloud console, select **Monitoring → Dashboards**.
 2. Select the dashboard named **VM-Series Metrics**.
 
+    <img src="images/ss07.png" width="500">
+
+> [!TIP]
+> Each metric can be set as an scaling parameter for the instance group.  See [Publishing Custom PAN-OS Metrics](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/about-the-vm-series-firewall/custom-pan-os-metrics-published-for-monitoring) for more information.
+
+
 ### Scaling the VM-Series
+The Terraform plan sets the min/max firewall count to `1`.  To simulate a scaling event, modify the instance group min/max thresholds.
 
-The managed instance group created by Terraform sets the minimum and the maximum number of VM-Series replicas to `1`.  
+1. Go to **Compute Engine → Instance Groups**.
+2. Open the `vmseries` instance group and click **EDIT**. 
+3. Under **Group size & autoscaling**, set the minimum to `2` and the maximum number of instances to `3`.
 
-You can modify the minimum and the maximum number of replicas to manually increase the number of running firewalls.
+    <img src="images/ss08.png" width="50%"> 
 
-1. Update the Autoscaling replica count through the Google Console or with Terraform. 
-
-   * **Update using Google Cloud Console**
-     1. In the Google Cloud console, go to **Compute Engine → Instance Groups**.
-     2. Open the `vmseries` instance group and click **EDIT**. 
-     3. Within the **Autoscaling** section set:
-        *  **Minimum number of instances** to `2`.
-        *  **Maximum number of instances** to `3`.
-     4. Click **Save**. 
-   * **Update using Terraform**
-
-     1. Add the following to your `terraform.tfvars`.
-
-         ```
-         vmseries_replica_minimum = 2
-         vmseries_replica_maximum = 3
-         ```
-
-     2. Re-apply the Terraform plan.  Terraform displays a list of all the resources that will be updated.
-
-         ```
-         terraform apply
-         ```
-
-     3. At the prompt, enter `yes` to update the cloud resources.
-   
-
-2. Go to **Compute Engine → VM instances**.  A new VM-Series instance should be created.
-
-    > The load balancers will not send traffic to the VM-Series until the bootstrap process has finished.  This process can take up to 10 minutes.  Please see [Bootstrap the VM-Series Firewall](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall) for more information.
-
-
-3. Once the VM-Series deploys, follow the [Access the VM-Series firewall](#access-the-vm-series-firewall) instructions to gain access to the firewall’s web interface.  
+4. Click **Save**. 
+5. Go to **Compute Engine → VM instances** to view the new VM-Series firewall.
+6. Once the VM-Series finishes bootstrapping, follow the [Access the VM-Series firewall](#access-the-vm-series-firewall) instructions to gain access to the firewall’s web interface.  
     
-    > This step is not required if you are bootstrapping the VM-Series to Panorama.  This is because Panorama pushes the entire configuration to the scaled firewalls.
+> [!IMPORTANT]
+> This step is not required if you are bootstrapping the VM-Series to Panorama.  This is because Panorama pushes the entire configuration to the scaled firewalls.
 
-4. On the scaled VM-Series, navigate to **Monitor → Traffic**.  The traffic logs should be populated demonstrating the scaled VM-Series is now processing traffic. 
+7. On the scaled VM-Series, navigate to **Monitor → Traffic**.  The traffic logs should be populated demonstrating the scaled VM-Series is now processing traffic. 
+
+> [!TIP]
+> You can also perform this in Terraform by adding the following values to your `terraform.tfvars`.</br>
+> `vmseries_replica_minimum = 2`</br>
+> `vmseries_replica_maximum = 3`
+
+
+
+## (Optional) Using Session Resiliency
+If session resiliency is enabled prior to deployment (`enable_session_resiliency = true`), sessions are stored in a Google Cloud Memorystore Redis Cache. This enables you to maintain layer-4 sessions by transferring sessions to healthy firewalls within the instance group.
+
+### Configure IPerf between spoke VMs
+
+Use [iPerf](https://iperf.fr/iperf-doc.php) to create parallel TCP connections between `spoke2-vm1` (client) and `spoke1-vm1` (server).  
+
+1. In cloud shell, SSH to `spoke1-vm1`.
+
+    ```
+    gcloud compute ssh paloalto@spoke1-vm1 --zone=us-central1-a
+    ```
+
+2. Install `iperf` on `spoke1-vm1`.
+
+    ```
+    sudo apt-get update
+    sudo apt-get install iperf
+    ```
+
+3. Make `spoke1-vm1` a server listening on `TCP:5001`.
+
+    ```
+    iperf -s -f M -p 5001 -t 3600
+    ```
+    
+4. In a *separate cloud shell tab*, SSH into `spoke2-vm1`.
+
+    ```
+    gcloud compute ssh paloalto@spoke2-vm1 --zone=us-central1-a
+    ```
+
+5. Install `iperf` on `spoke2-vm1`
+
+    ```
+    sudo apt-get update
+    sudo apt-get install iperf
+    ```
+
+6. Create `50` parallel connections from `spoke2-vm1` to `spoke1-vm1` using port `TCP:5001`. 
+
+    ```
+    iperf -c 10.1.0.10 -f M -p 5001 -P 50 -t 3600
+    ```
+
+     
+
+7. On each firewall, go to **Monitor → Traffic** and enter the filter to search for the `iperf` connections.
+
+    ```
+    ( port.dst eq '5001' )
+    ```
+    <img src="images/ss09.png">
+
+> [!NOTE]
+> On both firewalls you should see active connections on `TCP:5001`.
+
+
+### Trigger a failure event
+Simulate a failure event by randomly descaling one of the firewalls.  After the descale completes, verify all of the `iperf` connections are still transfering data.
+
+1. Go to **Compute Engine → Instance Groups**.
+2. Open the `vmseries` instance group and click **EDIT**. 
+3. Under **Group size & autoscaling**, set the minimum to `1` and the maximum number of instances to `1`.
+
+    <img src="images/ss10.png" width="50%"> 
+
+4. Wait for one of the VM-Series firewalls to descale.
+
+4. On `spoke2-vm1`, kill the `iperf` connection by entering `ctrl + c`.
+
+> [!TIP]
+> You should see the connection transfers are still running, indicating the sessions have successfully failed over. 
+
+
+
 
 
 ## Clean up
 
-To avoid incurring charges to your Google Cloud account for the resources you created in this tutorial, delete all the resources when you no longer need them.
+Delete all the resources when you no longer need them.
 
 1. Run the following command
     
