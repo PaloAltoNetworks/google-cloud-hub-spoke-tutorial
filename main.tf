@@ -1,4 +1,3 @@
-
 locals {
   prefix             = var.prefix != null && var.prefix != "" ? "${var.prefix}-" : ""
   vmseries_image_url = "https://www.googleapis.com/compute/v1/projects/paloaltonetworksgcp-public/global/images/${var.vmseries_image_name}"
@@ -34,7 +33,7 @@ module "vpc_mgmt" {
       allow = [
         {
           protocol = "tcp"
-          ports    = ["22", "443", "3978"]
+          ports    = ["22", "443", "3978", "6378"]
         }
       ]
     }
@@ -129,6 +128,7 @@ resource "google_redis_instance" "main" {
   name                    = "${local.prefix}vmseries-redis"
   project                 = var.project_id
   region                  = var.region
+  location_id             = data.google_compute_zones.main.names[0]
   tier                    = "STANDARD_HA"
   memory_size_gb          = 5
   replica_count           = 1
@@ -136,10 +136,9 @@ resource "google_redis_instance" "main" {
   redis_version           = "REDIS_7_0"
   connect_mode            = "DIRECT_PEERING"
   read_replicas_mode      = "READ_REPLICAS_ENABLED"
-  transit_encryption_mode = "SERVER_AUTHENTICATION"
+  transit_encryption_mode = "DISABLED"
   authorized_network      = module.vpc_mgmt.network_self_link
 }
-
 
 
 # -------------------------------------------------------------------------------------
@@ -158,10 +157,9 @@ data "google_compute_subnetwork" "untrust" {
 }
 
 
-// Update bootstrap.xml to reflect any changes made to variables.tf.
+// Update bootstrap.template to bootstrap firewall with local config.
 data "template_file" "bootstrap" {
   template = file("bootstrap_files/bootstrap.template")
-
   vars = {
     gateway_trust   = data.google_compute_subnetwork.trust.gateway_address
     gateway_untrust = data.google_compute_subnetwork.untrust.gateway_address
@@ -173,29 +171,59 @@ data "template_file" "bootstrap" {
 }
 
 
-// Create the bootstrap.xml file.
+// Create the bootstrap.xml file from bootstrap.template
 resource "local_file" "bootstrap" {
   filename = "bootstrap_files/bootstrap.xml"
   content  = data.template_file.bootstrap.rendered
 }
 
 
-// Create the bootstrap storage bucket.
+
+// Update init-cfg.template with bootstrap values.
+data "template_file" "init" {
+  template = file("bootstrap_files/init-cfg.template")
+  vars = {
+    plugin-op-commands = var.enable_session_resiliency ? "set-sess-ress:True" : ""
+    redis-endpoint     = var.enable_session_resiliency ? "${google_redis_instance.main[0].host}:${google_redis_instance.main[0].port}" : ""
+    redis-auth         = var.enable_session_resiliency ? "${google_redis_instance.main[0].auth_string}" : ""
+    panorama-server    = var.panorama_ip == null ? "" : var.panorama_ip
+    dgname             = var.panorama_dg == null ? "" : var.panorama_dg
+    tplname            = var.panorama_ts == null ? "" : var.panorama_ts
+    vm-auth-key        = var.panorama_auth_key == null ? "" : var.panorama_auth_key
+  }
+}
+
+
+// Create the init-cfg.txt from init-cfg.template
+resource "local_file" "init" {
+  filename = "bootstrap_files/init-cfg.txt"
+  content  = data.template_file.init.rendered
+}
+
+
+// Create the GCS bootstrap bucket with local firewall config (bootstrap.xml).
 module "bootstrap" {
   source          = "PaloAltoNetworks/swfw-modules/google//modules/bootstrap"
   version         = "~> 2.0"
   service_account = module.iam_service_account.email
   location        = "US"
-  files = {
-    "bootstrap_files/init-cfg.txt"                               = "config/init-cfg.txt"
-    "${local_file.bootstrap.filename}"                           = "config/bootstrap.xml"
-    "bootstrap_files/content/panupv2-all-contents-8622-7593"     = "content/panupv2-all-contents-8622-7593"
-    "bootstrap_files/content/panup-all-antivirus-4222-4735"      = "content/panup-all-antivirus-4222-4735"
-    "bootstrap_files/content/panupv3-all-wildfire-703414-706774" = "content/panupv3-all-wildfire-703414-706774"
-    "bootstrap_files/authcodes"                                  = "license/authcodes"
-  }
-}
 
+  // If panorama_ip is provided, skip uploading the local firewall config (bootstrap.xml) to GCS bootstrap bucket.
+  files = merge(
+    {
+      "${local_file.init.filename}"                                = "config/init-cfg.txt"
+      "bootstrap_files/content/panupv2-all-contents-8622-7593"     = "content/panupv2-all-contents-8622-7593"
+      "bootstrap_files/content/panup-all-antivirus-4222-4735"      = "content/panup-all-antivirus-4222-4735"
+      "bootstrap_files/content/panupv3-all-wildfire-703414-706774" = "content/panupv3-all-wildfire-703414-706774"
+      "bootstrap_files/authcodes"                                  = "license/authcodes"
+    },
+    var.panorama_ip == null ? { "${local_file.bootstrap.filename}" = "config/bootstrap.xml" } : {}
+  )
+
+  depends_on = [
+    google_redis_instance.main
+  ]
+}
 
 
 # -------------------------------------------------------------------------------------
@@ -208,7 +236,6 @@ module "iam_service_account" {
   service_account_id = "${local.prefix}vmseries-mig-sa"
   project_id         = var.project_id
 }
-
 
 module "vmseries" {
   source                = "PaloAltoNetworks/swfw-modules/google//modules/autoscale"
@@ -243,14 +270,7 @@ module "vmseries" {
     mgmt-interface-swap                  = "enable"
     serial-port-enable                   = true
     ssh-keys                             = "admin:${file(var.public_key_path)}"
-    redis-endpoint                       = var.enable_session_resiliency ? "${google_redis_instance.main[0].host}:${google_redis_instance.main[0].port}" : ""
-    redis-auth                           = var.enable_session_resiliency ? "${google_redis_instance.main[0].auth_string}" : ""
-    plugin-op-commands                   = var.enable_session_resiliency ? "set-sess-ress:True" : ""
-    vmseries-bootstrap-gce-storagebucket = var.panorama_ip == null ? module.bootstrap.bucket_name : "" // If Panorama IP is not provided, use to GSC to bootstrap
-    panorama-server                      = var.panorama_ip
-    dgname                               = var.panorama_dg
-    tplname                              = var.panorama_ts
-    vm-auth-key                          = var.panorama_auth_key
+    vmseries-bootstrap-gce-storagebucket = module.bootstrap.bucket_name
   }
 
   scopes = [
@@ -265,7 +285,6 @@ module "vmseries" {
     module.bootstrap
   ]
 }
-
 
 
 # -------------------------------------------------------------------------------------
