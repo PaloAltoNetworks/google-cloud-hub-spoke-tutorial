@@ -57,6 +57,18 @@ variable "vmseries_image_name" {
   type        = string
 }
 
+variable "vmseries_machine_type" {
+  description = "The machine shape for the VM-Series instance (N2 and E2 instances are supported)."
+  default     = "n2-standard-4"
+  type        = string
+}
+
+variable "vmseries_min_cpu_platform" {
+  description = "The minimum CPU platform for the machine type."
+  default     = "Intel Cascade Lake"
+  type        = string
+}
+
 variable "vmseries_replica_minimum" {
   description = "The max number of firewalls to run in each region."
   default     = 1

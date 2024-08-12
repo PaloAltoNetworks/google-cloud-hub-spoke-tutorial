@@ -241,8 +241,10 @@ module "vmseries" {
   source                = "PaloAltoNetworks/swfw-modules/google//modules/autoscale"
   version               = "~> 2.0"
   name                  = "${local.prefix}vmseries"
-  regional_mig          = true
   region                = var.region
+  regional_mig          = true
+  machine_type          = var.vmseries_machine_type
+  min_cpu_platform      = var.vmseries_min_cpu_platform
   min_vmseries_replicas = var.vmseries_replica_minimum // min firewalls per zone.
   max_vmseries_replicas = var.vmseries_replica_maximum // max firewalls per zone.
   image                 = local.vmseries_image_url
