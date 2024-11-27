@@ -2,7 +2,7 @@
 project_id                  = null
 public_key_path             = "~/.ssh/vmseries-tutorial.pub"
 mgmt_allow_ips              = ["0.0.0.0/0"]
-vmseries_image_name         = "vmseries-flex-bundle2-1120"
+vmseries_image_name         = "vmseries-flex-bundle2-1123h3"
 create_spoke_networks       = true
 enable_session_resiliency   = false
 
