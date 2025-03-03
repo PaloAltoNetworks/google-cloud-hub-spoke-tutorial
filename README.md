@@ -228,10 +228,11 @@ Palo Alto Networks [App-ID™](https://www.paloaltonetworks.com/technologies/app
 
 
 
-2. Test **outbound internet** inspection by downloading at pseudo malicious file from the internet.
+2. Test **outbound internet** inspection by generating pseudo malicious traffic to the internet.
 
     ```
-    wget www.eicar.eu/eicar.com.txt --tries 1 --timeout 2
+    curl -s -o /dev/null -w "%{http_code}\n" http://www.eicar.org/cgi-bin/.%2e/.%2e/.%2e/.%2e/bin/sh --data "echo Content-Type: text/plain; echo; uname -a" --max-time 2
+    curl -s -o /dev/null -w "%{http_code}\n" http://www.eicar.org/cgi-bin/user.sh -H "FakeHeader:() { :; }; echo Content-Type: text/html; echo ; /bin/uname -a" --max-time 2
     ```
 
 
