@@ -211,7 +211,7 @@ resource "google_compute_instance" "spoke2_vm1" {
 
   boot_disk {
     initialize_params {
-      image = "https://www.googleapis.com/compute/v1/projects/panw-gcp-team-testing/global/images/ubuntu-2004-lts-apache"
+      image = "https://www.googleapis.com/compute/v1/projects/panw-gcp-team-testing/global/images/ubuntu-2004-lts-jenkins"
     }
   }
 
@@ -241,7 +241,7 @@ resource "google_compute_instance" "spoke2_vm2" {
 
   boot_disk {
     initialize_params {
-      image = "https://www.googleapis.com/compute/v1/projects/panw-gcp-team-testing/global/images/ubuntu-2004-lts-apache"
+      image = "https://www.googleapis.com/compute/v1/projects/panw-gcp-team-testing/global/images/ubuntu-2004-lts-jenkins"
     }
   }
 
